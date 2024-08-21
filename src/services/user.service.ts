@@ -1,17 +1,28 @@
 import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
 import {userCollection} from "../db/mongo-db";
+import {WithId} from "mongodb";
+import {User} from "../types/users.interface";
 
 
 export const userService = {
 
+    async validateUserByEmail(email: string) {
+        const user = await userCollection.findOne({email});
+        return usersQueryRepository.userMapOutput(user as WithId<User>);
+    },
+    // обычный репозиторий
+    async validateUserByLogin(login: string) {
+        const user = await userCollection.findOne({login});
+        // отдавать не всего юзера
+        return usersQueryRepository.userMapOutput(user as WithId<User>)
+    },
+
     async validateUser(userLoginOrEmail: string) {
         let user
         if (!/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/.test(userLoginOrEmail)) {
-            // return  await usersQueryRepository.validateUserByLogin(userLoginOrEmail)
-            user = await usersQueryRepository.validateUserByLogin(userLoginOrEmail)
+            user = await this.validateUserByLogin(userLoginOrEmail)
         } else {
-            // return  await usersQueryRepository.validateUserByEmail(userLoginOrEmail)
-            user = await usersQueryRepository.validateUserByEmail(userLoginOrEmail)
+            user = await this.validateUserByEmail(userLoginOrEmail)
         }
         // if (!user) {
         //     throw ApiError.BadRequest('Пользователь не найден', 'loginOrEmail')

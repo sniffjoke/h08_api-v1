@@ -14,7 +14,7 @@ import {userCollection} from "../db/mongo-db";
 export const registerController = async (req: Request, res: Response) => {
     try {
         const {login, email, password} = req.body
-        const candidateEmail = await usersQueryRepository.getUserByEmail(email)
+        const candidateEmail = await usersRepository.getUserByEmail(email)
         if (candidateEmail) {
             res.status(400).json({
                 errorsMessages: [
@@ -26,7 +26,7 @@ export const registerController = async (req: Request, res: Response) => {
             })
             return
         }
-        const candidateLogin = await usersQueryRepository.getUserByLogin(login)
+        const candidateLogin = await usersRepository.getUserByLogin(login)
         if (candidateLogin) {
             res.status(400).json({
                 errorsMessages: [
@@ -50,10 +50,10 @@ export const registerController = async (req: Request, res: Response) => {
             )
         }
 
-        const user = await usersRepository.createUser({email, password: hashPassword, login}, emailConfirmation)
+        const userId = await usersRepository.createUser({email, password: hashPassword, login}, emailConfirmation)
         const mailService = new MailService()
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/registration-confirmation/?code=${activationLink}`)
-        const token = tokenService.createToken(user)
+        const token = tokenService.createToken(userId.toString())
         res.status(204).send({accessToken: token})
     } catch (e) {
         res.status(500).send(e)
@@ -75,10 +75,11 @@ export const loginController = async (req: Request, res: Response, next: NextFun
             })
             return
         }
-        const isPasswordCorrect = await bcrypt.compare(password, user.password)
+        const findedUser = await usersRepository.findUserById(user.id.toString())
+        const isPasswordCorrect = await bcrypt.compare(password, findedUser?.password as string)
         // password !== user.password // service
         if (isPasswordCorrect) {
-            const token = tokenService.createToken(user)
+            const token = tokenService.createToken(user.id.toString())
             res.status(200).json({accessToken: token})
             // return
         } else {

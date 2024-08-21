@@ -1,13 +1,12 @@
-import {User} from "../types/users.interface";
 import * as jwt from 'jsonwebtoken';
 import {SETTINGS} from "../settings";
 
 
 export const tokenService = {
 
-    createToken(user: User) {
+    createToken(userId: string) {
          const token = jwt.sign(
-            {_id: user._id},
+            {_id: userId},
             SETTINGS.VARIABLES.JWT_SECRET_ACCESS_TOKEN as string,
             {expiresIn: 60*60*1000}
         )

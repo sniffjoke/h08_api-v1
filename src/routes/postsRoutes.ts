@@ -1,10 +1,8 @@
 import express from "express";
 import {
-    deleteController,
-    getController,
-    getControllerById,
+    getPostsController,
     createPostController,
-    updatePostController
+    updatePostController, getPostByIdController, deletePostController
 } from "../controllers/postsController";
 import {
     titlePostValidator,
@@ -15,14 +13,14 @@ import {
 } from "../middlewares/postsValidators";
 import {errorMiddleware} from "../middlewares/errorMiddleware";
 import {authMiddleware, authMiddlewareWithBearer} from "../middlewares/authMiddleware";
-import {createCommentByPostIdWithParams, getAllCommentsByPostId} from "../controllers/commentsController";
+import {createCommentByPostIdWithParamsController, getAllCommentsByPostIdController} from "../controllers/commentsController";
 import {contentCommentValidator} from "../middlewares/commentsValidators";
 
 
 const router = express.Router();
 
 router.route('/')
-    .get(getController)
+    .get(getPostsController)
     .post(
         authMiddleware,
         titlePostValidator,
@@ -48,12 +46,12 @@ router.route('/:id')
         authMiddleware,
         idPostValidator,
         errorMiddleware,
-        deleteController
+        deletePostController
     )
     .get(
         idPostValidator,
         errorMiddleware,
-        getControllerById
+        getPostByIdController
     )
 
 
@@ -61,14 +59,14 @@ router.route('/:id/comments')
     .get(
         idPostValidator,
         errorMiddleware,
-        getAllCommentsByPostId
+        getAllCommentsByPostIdController
     )
     .post(
         authMiddlewareWithBearer,
         idPostValidator,
         contentCommentValidator,
         errorMiddleware,
-        createCommentByPostIdWithParams
+        createCommentByPostIdWithParamsController
     )
 
 

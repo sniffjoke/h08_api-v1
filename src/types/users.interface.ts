@@ -1,8 +1,11 @@
-import {ObjectId} from "mongodb";
-
 export interface User {
-    _id: ObjectId;
     login: string;
     email: string;
-    createdAt?: string;
+    password: string;
+    createdAt: string;
+    emailConfirmation: {
+        confirmationCode?: string
+        expirationDate?: Date
+        isConfirmed: boolean
+    }
 }

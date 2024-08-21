@@ -25,7 +25,7 @@ export const getCommentsController = async (req: Request<any, any, any, any>, re
     })
 }
 
-export const getAllCommentsByPostId = async (req: Request<any, any, any, any>, res: Response) => {
+export const getAllCommentsByPostIdController = async (req: Request<any, any, any, any>, res: Response) => {
     const postId = req.params.id;
     const commentsQuery = await commentsQueryHelper(req.query, postId)
     const comments = await commentsQueryRepository.getAllCommentsByPostId(commentsQuery)
@@ -46,12 +46,16 @@ export const getAllCommentsByPostId = async (req: Request<any, any, any, any>, r
 }
 
 export const getCommentByIdController = async (req: Request, res: Response) => {
-    const id =  req.params.id
-    const comment = await commentsQueryRepository.commentOutput(id)
-    res.status(200).json(comment)
+    try {
+        const id = req.params.id
+        const comment = await commentsQueryRepository.commentOutput(id)
+        res.status(200).json(comment)
+    } catch (e) {
+        res.status(500).send(e)
+    }
 }
 
-export const createCommentByPostIdWithParams = async (req: Request, res: Response) => {
+export const createCommentByPostIdWithParamsController = async (req: Request, res: Response) => {
     try {
         const post = await postCollection.findOne({_id: new ObjectId(req.params.id)})
         const token = tokenService.getToken(req.headers.authorization)

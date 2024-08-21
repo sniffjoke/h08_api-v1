@@ -1,10 +1,10 @@
 import {body, param} from "express-validator";
 import {ObjectId} from "mongodb";
-import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
+import {userCollection} from "../db/mongo-db";
 
 export const idUserValidator = param('id')
     .custom(async id => {
-        const user: any = await usersQueryRepository.findUserById(new ObjectId(id))
+        const user: any = await userCollection.findOne({_id: new ObjectId(id)})
         if (!user) {
             throw new Error('Not found')
         } else {

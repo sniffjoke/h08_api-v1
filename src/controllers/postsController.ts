@@ -2,12 +2,11 @@ import {Request, Response} from 'express';
 import {ObjectId} from "mongodb";
 import {postsRepository} from "../repositories/postsRepository";
 import {queryHelper} from "../helpers/helpers";
-import {blogsQueryRepository} from "../queryRepositories/blogsQueryRepository";
 import {postsQueryRepository} from "../queryRepositories/postsQueryRepository";
 import {blogsRepository} from "../repositories/blogsRepository";
 
 
-export const getController = async (req: Request<any, any, any, any>, res: Response) => {
+export const getPostsController = async (req: Request<any, any, any, any>, res: Response) => {
     try {
         const postsQuery = await queryHelper(req.query, 'posts')
         const posts = await postsQueryRepository.postsSortWithQuery(postsQuery)
@@ -29,7 +28,7 @@ export const getController = async (req: Request<any, any, any, any>, res: Respo
     }
 }
 
-export const getControllerById = async (req: Request, res: Response) => {
+export const getPostByIdController = async (req: Request, res: Response) => {
     try {
         const postId = req.params.id
         const post = await postsQueryRepository.postOutput(postId)
@@ -60,7 +59,7 @@ export const updatePostController = async (req: Request, res: Response) => {
     }
 }
 
-export const deleteController = async (req: Request, res: Response) => {
+export const deletePostController = async (req: Request, res: Response) => {
     try {
         const postId = new ObjectId(req.params.id)
         await postsRepository.postDelete(postId)

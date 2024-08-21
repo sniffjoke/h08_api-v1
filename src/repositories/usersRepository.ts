@@ -1,7 +1,7 @@
 import {userCollection} from "../db/mongo-db";
-import {ObjectId} from "mongodb";
-import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
+import {ObjectId, WithId} from "mongodb";
 import {UserDBType} from "../dtos/users.dto";
+import {User} from "../types/users.interface";
 
 export interface EmailConfirmationModel {
         confirmationCode?: string
@@ -11,26 +11,34 @@ export interface EmailConfirmationModel {
 
 export const usersRepository = {
 
-    async getAllUsers(query: any) {
-        const users = await usersQueryRepository.findAllUsers(query)
-        return {
-            ...query,
-            items: users.map(user => usersQueryRepository.userMapOutput(user))
-        }
-    },
-
-    async createUser(newUser: UserDBType, emailConfirmation: EmailConfirmationModel): Promise<any> {
-        const user = {
-            ...newUser,
+    async createUser(userData: UserDBType, emailConfirmation: EmailConfirmationModel): Promise<ObjectId> {
+        const user: User = {
+            login: userData.login,
+            email: userData.email,
+            password: userData.password,
             emailConfirmation,
             createdAt: new Date(Date.now()).toISOString()
         }
-        await userCollection.insertOne(user)
+        const newUser = await userCollection.insertOne(user as WithId<User>)
+        return newUser.insertedId
+    },
+
+    async deleteUser(id: string) {
+        return await userCollection.deleteOne({_id: new ObjectId(id)})
+    },
+
+    async findUserById(id: string) {
+        return await userCollection.findOne({_id: new ObjectId(id)})
+    },
+
+    async getUserByEmail(email: string) {
+        const user = await userCollection.findOne({email}) //$or
         return user
     },
 
-    async deleteUser(id: ObjectId) {
-        return await userCollection.deleteOne({_id: id})
-    }
+    async getUserByLogin(login: string) {
+        const user = await userCollection.findOne({login})
+        return user
+    },
 
 }
