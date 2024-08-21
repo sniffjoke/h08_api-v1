@@ -2,6 +2,8 @@ import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
 import {userCollection} from "../db/mongo-db";
 import {WithId} from "mongodb";
 import {User} from "../types/users.interface";
+import {ApiError} from "../exceptions/api.error";
+import {usersRepository} from "../repositories/usersRepository";
 
 
 export const userService = {
@@ -42,6 +44,18 @@ export const userService = {
         const user = await userCollection.findOneAndUpdate({'emailConfirmation.confirmationCode': confirmationCode}, {$set: {'emailConfirmation.isConfirmed': true}})
         // await userCollection.updateOne(user, {$set: {'emailConfirmation.isConfirmed': true}})
         return user
+    },
+
+    async userExists(email: string, login: string) {
+        const emailExists = await usersRepository.getUserByEmail(email)
+        const loginExists = await usersRepository.getUserByLogin(login)
+        if (emailExists) {
+            throw ApiError.BadRequest(`Юзер с email ${email} уже существует`, 'email')
+        }
+        if (loginExists) {
+            throw ApiError.BadRequest(`Юзер с login ${login} уже существует`, 'login')
+        }
+        return null
     }
 
 }

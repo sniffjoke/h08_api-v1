@@ -1,4 +1,4 @@
-import {Request, Response} from 'express';
+import {NextFunction, Request, Response} from 'express';
 import {EmailConfirmationModel, usersRepository} from "../repositories/usersRepository";
 import {usersQueryHelper} from "../helpers/usersHelper";
 import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
@@ -31,33 +31,10 @@ export const getUserByIdController = async (req: Request, res: Response) => {
     res.status(200).json(user)
 }
 
-export const createUserController = async (req: Request, res: Response) => {
+export const createUserController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {login, email, password} = req.body
-        const uniqueEmail = await userService.validateUserByEmail(req.body.email)
-        const uniqueLogin = await userService.validateUserByLogin(req.body.login)
-        if (uniqueEmail !== null) {
-            res.status(400).json({
-                errorsMessages: [
-                    {
-                        message: "Данный email уже существует",
-                        field: "email"
-                    }
-                ]
-            })
-            return
-        }
-        if (uniqueLogin !== null) {
-            res.status(400).json({
-                errorsMessages: [
-                    {
-                        message: "Данный login уже существует",
-                        field: "login"
-                    }
-                ]
-            })
-            return
-        }
+        await userService.userExists(email, login)
         const emailConfirmation: EmailConfirmationModel = {
             isConfirmed: true
         }
@@ -66,10 +43,9 @@ export const createUserController = async (req: Request, res: Response) => {
         const newUserId = await usersRepository.createUser(userData, emailConfirmation)
         const newUser = await usersQueryRepository.userOutput(newUserId.toString())
         res.status(201).json(newUser)
-
     } catch (e) {
-        console.log(e)
-        res.status(500).send(e)
+        // res.status(500).send(e)
+        next(e)
     }
 }
 

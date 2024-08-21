@@ -15,13 +15,3 @@ export const passwordUserValidator = body('password')
     .isString().withMessage('Должно быть строковым значением')
     .trim()
     .isLength({min: 6, max: 20}).withMessage('Количество знаков: 6-20')
-
-// export const idBlogValidator = param('id')
-//     .custom(async blogId => {
-//         const blog = await blogsRepository.findBlogById(new ObjectId(blogId))
-//         if (!blog) {
-//             throw new Error('Not found')
-//         } else {
-//             return !!blog
-//         }
-//     }).withMessage('Блог с заданным id не найден!')
