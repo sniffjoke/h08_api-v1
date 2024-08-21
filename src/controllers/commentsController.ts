@@ -3,8 +3,6 @@ import {ObjectId} from "mongodb";
 import {commentsRepository} from "../repositories/commentsRepository";
 import {commentsQueryHelper} from "../helpers/commentsHelper";
 import {commentsQueryRepository} from "../queryRepositories/commentsQueryRepository";
-import {postsQueryRepository} from "../queryRepositories/postsQueryRepository";
-import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
 import {tokenService} from "../services/token.service";
 import {postCollection, userCollection} from "../db/mongo-db";
 
