@@ -36,7 +36,7 @@ export const createUserController = async (req: Request, res: Response) => {
         const {login, email, password} = req.body
         const uniqueEmail = await userService.validateUserByEmail(req.body.email)
         const uniqueLogin = await userService.validateUserByLogin(req.body.login)
-        if (uniqueEmail) {
+        if (uniqueEmail !== null) {
             res.status(400).json({
                 errorsMessages: [
                     {
@@ -47,7 +47,7 @@ export const createUserController = async (req: Request, res: Response) => {
             })
             return
         }
-        if (uniqueLogin) {
+        if (uniqueLogin !== null) {
             res.status(400).json({
                 errorsMessages: [
                     {
@@ -64,10 +64,11 @@ export const createUserController = async (req: Request, res: Response) => {
         const hashPassword = await bcrypt.hash(password, 3)
         const userData: UserDBType = {login, email, password: hashPassword}
         const newUserId = await usersRepository.createUser(userData, emailConfirmation)
-        const newUser = usersQueryRepository.userOutput(newUserId.toString())
+        const newUser = await usersQueryRepository.userOutput(newUserId.toString())
         res.status(201).json(newUser)
 
     } catch (e) {
+        console.log(e)
         res.status(500).send(e)
     }
 }

@@ -8,13 +8,21 @@ export const userService = {
 
     async validateUserByEmail(email: string) {
         const user = await userCollection.findOne({email});
-        return usersQueryRepository.userMapOutput(user as WithId<User>);
+        if (user) {
+            return usersQueryRepository.userMapOutput(user as WithId<User>);
+        } else {
+            return null
+        }
     },
     // обычный репозиторий
     async validateUserByLogin(login: string) {
-        const user = await userCollection.findOne({login});
         // отдавать не всего юзера
-        return usersQueryRepository.userMapOutput(user as WithId<User>)
+        const user = await userCollection.findOne({login});
+        if (user) {
+            return usersQueryRepository.userMapOutput(user as WithId<User>)
+        } else {
+            return null
+        }
     },
 
     async validateUser(userLoginOrEmail: string) {
