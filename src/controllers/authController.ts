@@ -41,37 +41,18 @@ export const loginController = async (req: Request, res: Response, next: NextFun
     try {
         const {loginOrEmail, password} = req.body;
         const user = await authService.validateUser(loginOrEmail)
-        // const findedUser = await usersRepository.findUserById(user._id.toString())
-        const isPasswordCorrect = await bcrypt.compare(password, user.password)
-        // password !== user.password // service
-        if (isPasswordCorrect) {
-            const token = tokenService.createToken(user._id.toString())
-            res.status(200).json({accessToken: token})
-            // return
-        } else {
-            res.status(401).json({
-                errorsMessages: [
-                    {
-                        message: "Неправильный пароль",
-                        field: "password"
-                    }
-                ]
-            })
-            return
-        }
-    } catch (e) {
+        await authService.isPasswordCorrect(password, user.password)
+        const token = tokenService.createToken(user._id.toString())
+        res.status(200).json({accessToken: token})
+    } catch
+        (e) {
         return next(e)
     }
 }
 
-export const getMeController = async (req: Request, res: Response) => {
+export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const token = tokenService.getToken(req.headers.authorization)
-        if (token === undefined) {
-            res.status(401).send('Нет авторизации')
-            return
-        }
-
         const decodedToken: any = tokenService.decodeToken(token)
         const user = await usersQueryRepository.userOutput(decodedToken._id)
         res.status(200).json({
@@ -81,7 +62,7 @@ export const getMeController = async (req: Request, res: Response) => {
         })
 
     } catch (e) {
-        res.status(500).send(e)
+        next(e)
     }
 }
 

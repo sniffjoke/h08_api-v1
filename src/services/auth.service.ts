@@ -1,6 +1,7 @@
 import {userCollection} from "../db/mongo-db";
 import {ApiError} from "../exceptions/api.error";
 import {usersRepository} from "../repositories/usersRepository";
+import * as bcrypt from "bcrypt";
 
 
 export const authService = {
@@ -16,6 +17,14 @@ export const authService = {
             throw ApiError.BadRequest('Пользователь не найден', 'loginOrEmail')
         }
         return user
+    },
+
+    async isPasswordCorrect(password: string, hashedPassword: string) {
+        const isCorrect =  await bcrypt.compare(password, hashedPassword)
+        if (!isCorrect) {
+            throw ApiError.UnauthorizedError()
+        }
+        return isCorrect
     },
 
     async activate(confirmationCode: any) {

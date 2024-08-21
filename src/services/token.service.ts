@@ -1,5 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import {SETTINGS} from "../settings";
+import {ApiError} from "../exceptions/api.error";
 
 
 export const tokenService = {
@@ -20,7 +21,11 @@ export const tokenService = {
     },
 
     getToken(bearerToken: string | undefined) {
-        return bearerToken ? bearerToken.split(' ')[1] : undefined
+        const token = bearerToken ? bearerToken.split(' ')[1] : undefined
+        if (!token) {
+            throw ApiError.UnauthorizedError()
+        }
+        return token
     },
 
 }
