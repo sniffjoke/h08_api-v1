@@ -1,9 +1,9 @@
 import express from "express";
 import {
-    activateEmailUserController, emailResending,
+    activateEmailUserController,
     getMeController,
     loginController,
-    registerController
+    registerController, resendEmailController
 } from "../controllers/authController";
 import {errorMiddleware} from "../middlewares/errorMiddleware";
 import {authMiddlewareWithBearer} from "../middlewares/authMiddleware";
@@ -44,7 +44,7 @@ router.route('/registration-confirmation')
 router.route('/registration-email-resending')
     .post(
         emailAuthRegisterValidator,
-        emailResending
+        resendEmailController
     );
 
 

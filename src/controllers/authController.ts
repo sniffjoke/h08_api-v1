@@ -7,7 +7,6 @@ import {EmailConfirmationModel, usersRepository} from "../repositories/usersRepo
 import {v4 as uuid} from 'uuid'
 import MailService from "../services/mail.service";
 import {add} from 'date-fns'
-import {userCollection} from "../db/mongo-db";
 import {authService} from "../services/auth.service";
 
 
@@ -66,70 +65,22 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
     }
 }
 
-export const activateEmailUserController = async (req: Request, res: Response) => {
+export const activateEmailUserController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const confirmationCode: any = req.body.code
-        const findedUser = await userCollection.findOne({'emailConfirmation.confirmationCode': confirmationCode})
-        if (findedUser?.emailConfirmation?.isConfirmed) {
-            res.status(400).json({
-                    errorsMessages: [
-                        {
-                            message: "'Юзер уже активирован'",
-                            field: "code"
-                        }
-                    ]
-                }
-            )
-            return
-        }
-        const activate = await authService.activate(confirmationCode)
-        if (activate) {
-            res.status(204).json(activate)
-        } else {
-            res.status(400).json({
-                    errorsMessages: [
-                        {
-                            message: "'Юзер не найден'",
-                            field: "code"
-                        }
-                    ]
-                }
-            )
-        }
+        const confirmationCode: string = req.body.code
+        await authService.isActivateEmailByCode(confirmationCode)
+        await authService.toActivate(confirmationCode)
+        res.status(204).send('Email подтвержден')
     } catch (e) {
-        res.status(500).send(e)
+        next(e)
     }
 }
 
-export const emailResending = async (req: Request, res: Response) => {
+export const resendEmailController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {email} = req.body
-        const validateUser = await userCollection.findOne({email})
-        if (!validateUser) {
-            res.status(400).json({
-                    errorsMessages: [
-                        {
-                            message: "Юзер не найден",
-                            field: "email"
-                        }
-                    ]
-                }
-            )
-            return
-            // throw ApiError.BadRequest('Юзер не найден', 'email')
-        }
-        if (validateUser.emailConfirmation?.isConfirmed) {
-            res.status(400).json({
-                    errorsMessages: [
-                        {
-                            message: "Юзер уже активирован",
-                            field: "email"
-                        }
-                    ]
-                }
-            )
-            return
-        }
+        await authService.validateUserByEmail(email)
+        await authService.isActivateEmailByStatus(email)
         const activationLink = uuid()
         const emailConfirmation: EmailConfirmationModel = {
             isConfirmed: false,
@@ -142,10 +93,10 @@ export const emailResending = async (req: Request, res: Response) => {
         }
         const mailService = new MailService()
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/registration-confirmation/?code=${activationLink}`)
-        await userCollection.updateOne({email}, {$set: {emailConfirmation}})
-        res.status(204).json()
+        await authService.userUpdateWithEmailConfirmation(email, emailConfirmation)
+        res.status(204).send('Ссылка повторна отправлена')
     } catch (e) {
-        res.status(500).send(e)
+        next(e)
     }
 }
 

@@ -1,10 +1,24 @@
-import {LoginUserDto} from "../dtos/login.dto";
+import {userCollection} from "../db/mongo-db";
+import {EmailConfirmationModel} from "./usersRepository";
 
 
 export const authRepository = {
 
-    async login(loginDto: LoginUserDto): Promise<any> {
-        return loginDto
+    async updateUserWithResendActivateEmail(email: string, emailConfirmation: EmailConfirmationModel) {
+        return userCollection.updateOne({email}, {$set: {emailConfirmation}});
+    },
+
+    async checkActivateEmailByCode(confirmationCode: string) {
+        const checkActivate = await userCollection.findOne({'emailConfirmation.confirmationCode': confirmationCode})
+        return checkActivate;
+    },
+
+    async toActivateEmail(confirmationCode: string) {
+        const updateEmail = await userCollection.findOneAndUpdate(
+            {'emailConfirmation.confirmationCode': confirmationCode},
+            {$set: {emailConfirmation: {isConfirmed: true}}}
+        )
+        return updateEmail
     }
 
 }

@@ -1,7 +1,7 @@
-import {userCollection} from "../db/mongo-db";
 import {ApiError} from "../exceptions/api.error";
-import {usersRepository} from "../repositories/usersRepository";
+import {EmailConfirmationModel, usersRepository} from "../repositories/usersRepository";
 import * as bcrypt from "bcrypt";
+import {authRepository} from "../repositories/authRepository";
 
 
 export const authService = {
@@ -27,10 +27,47 @@ export const authService = {
         return isCorrect
     },
 
-    async activate(confirmationCode: any) {
-        const user = await userCollection.findOneAndUpdate({'emailConfirmation.confirmationCode': confirmationCode}, {$set: {'emailConfirmation.isConfirmed': true}})
-        // await userCollection.updateOne(user, {$set: {'emailConfirmation.isConfirmed': true}})
+    async isActivateEmailByCode(confirmationCode: string) {
+        const isActivate = await authRepository.checkActivateEmailByCode(confirmationCode)
+        if (!isActivate) {
+            throw ApiError.BadRequest('Юзер уже активирован', 'code')
+        }
+    },
+
+    async toActivate(confirmationCode: string) {
+        const user = await authRepository.toActivateEmail(confirmationCode)
+        if (!user) {
+            throw ApiError.BadRequest('Юзер не найден', 'code')
+        }
         return user
     },
+
+    async validateUserByEmail(email: string) {
+        const isExists = await usersRepository.getUserByEmail(email)
+        if (!isExists) {
+            throw ApiError.BadRequest('Юзер не найден', 'email')
+        }
+        return isExists
+    },
+
+    // async isActivateEmailByStatus(confirmationCode: string) {
+    //     const isActivate = await authRepository.checkActivateEmailByStatus(confirmationCode)
+    //     if (!isActivate) {
+    //         throw ApiError.BadRequest('Юзер уже активирован', 'code')
+    //     }
+    // },
+
+    async isActivateEmailByStatus(email: string) {
+        const isActivate = await usersRepository.getUserByEmail(email)
+        if (isActivate?.emailConfirmation.isConfirmed) {
+            throw ApiError.BadRequest('Юзер уже активирован', 'email')
+        }
+        return isActivate
+    },
+
+    async userUpdateWithEmailConfirmation(email: string, confirmationCode: EmailConfirmationModel) {
+        const user = await authRepository.updateUserWithResendActivateEmail(email, confirmationCode)
+        return user
+    }
 
 }
