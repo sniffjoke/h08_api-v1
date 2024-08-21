@@ -25,12 +25,6 @@ export const getUsersController = async (req: Request<any, any, any, any>, res: 
     })
 }
 
-export const getUserByIdController = async (req: Request, res: Response) => {
-    const id = req.params.id
-    const user = await usersQueryRepository.userOutput(id)
-    res.status(200).json(user)
-}
-
 export const createUserController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {login, email, password} = req.body
@@ -44,7 +38,6 @@ export const createUserController = async (req: Request, res: Response, next: Ne
         const newUser = await usersQueryRepository.userOutput(newUserId.toString())
         res.status(201).json(newUser)
     } catch (e) {
-        // res.status(500).send(e)
         next(e)
     }
 }
@@ -58,3 +51,9 @@ export const deleteUserByIdController = async (req: Request, res: Response) => {
         res.status(500).send(e)
     }
 }
+
+// export const getUserByIdController = async (req: Request, res: Response) => {
+//     const id = req.params.id
+//     const user = await usersQueryRepository.userOutput(id)
+//     res.status(200).json(user)
+// }

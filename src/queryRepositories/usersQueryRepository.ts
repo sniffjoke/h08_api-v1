@@ -24,11 +24,6 @@ export const usersQueryRepository = {
         return users.map(user => this.userMapOutput(user))
     },
 
-    async getAllUsers() {
-        const users = await userCollection.find().toArray()
-        return users.map(user => this.userMapOutput(user))
-    },
-
     async userOutput(id: string) {
         const user = await userCollection.findOne({_id: new ObjectId(id)})
         return this.userMapOutput(user as WithId<User>)
@@ -44,8 +39,9 @@ export const usersQueryRepository = {
         }
     },
 
-    async getUserById(id: ObjectId) {
-        const user = await userCollection.findOne({_id: id})
-        return user
-    }
+    // async getAllUsers() {
+    //     const users = await userCollection.find().toArray()
+    //     return users.map(user => this.userMapOutput(user))
+    // }
+
 }

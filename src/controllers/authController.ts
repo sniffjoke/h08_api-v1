@@ -1,7 +1,6 @@
 import {NextFunction, Request, Response} from 'express';
 import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
 import {tokenService} from "../services/token.service";
-import {ObjectId} from "mongodb";
 import {userService} from "../services/user.service";
 import * as bcrypt from 'bcrypt';
 import {EmailConfirmationModel, usersRepository} from "../repositories/usersRepository";
@@ -9,35 +8,13 @@ import {v4 as uuid} from 'uuid'
 import MailService from "../services/mail.service";
 import {add} from 'date-fns'
 import {userCollection} from "../db/mongo-db";
+import {authService} from "../services/auth.service";
 
 
-export const registerController = async (req: Request, res: Response) => {
+export const registerController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {login, email, password} = req.body
-        const candidateEmail = await usersRepository.getUserByEmail(email)
-        if (candidateEmail) {
-            res.status(400).json({
-                errorsMessages: [
-                    {
-                        message: "Данный пользователь уже существует",
-                        field: "email"
-                    }
-                ]
-            })
-            return
-        }
-        const candidateLogin = await usersRepository.getUserByLogin(login)
-        if (candidateLogin) {
-            res.status(400).json({
-                errorsMessages: [
-                    {
-                        message: "Данный пользователь уже существует",
-                        field: "login"
-                    }
-                ]
-            })
-            return
-        }
+        await userService.userExists(login, email)
         const hashPassword = await bcrypt.hash(password, 3)
         const activationLink = uuid()
         const emailConfirmation: EmailConfirmationModel = {
@@ -56,30 +33,19 @@ export const registerController = async (req: Request, res: Response) => {
         const token = tokenService.createToken(userId.toString())
         res.status(204).send({accessToken: token})
     } catch (e) {
-        res.status(500).send(e)
+        next(e)
     }
 }
 
 export const loginController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {loginOrEmail, password} = req.body;
-        const user = await userService.validateUser(loginOrEmail)
-        if (!user) {
-            res.status(401).json({
-                errorsMessages: [
-                    {
-                        message: "Данного пользователя не существует",
-                        field: "loginOrEmail"
-                    }
-                ]
-            })
-            return
-        }
-        const findedUser = await usersRepository.findUserById(user.id.toString())
-        const isPasswordCorrect = await bcrypt.compare(password, findedUser?.password as string)
+        const user = await authService.validateUser(loginOrEmail)
+        // const findedUser = await usersRepository.findUserById(user._id.toString())
+        const isPasswordCorrect = await bcrypt.compare(password, user.password)
         // password !== user.password // service
         if (isPasswordCorrect) {
-            const token = tokenService.createToken(user.id.toString())
+            const token = tokenService.createToken(user._id.toString())
             res.status(200).json({accessToken: token})
             // return
         } else {
@@ -94,8 +60,6 @@ export const loginController = async (req: Request, res: Response, next: NextFun
             return
         }
     } catch (e) {
-        console.log('catch')
-        // res.status(500).send(e)
         return next(e)
     }
 }
@@ -109,11 +73,11 @@ export const getMeController = async (req: Request, res: Response) => {
         }
 
         const decodedToken: any = tokenService.decodeToken(token)
-        const user = await usersQueryRepository.getUserById(new ObjectId(decodedToken._id))
+        const user = await usersQueryRepository.userOutput(decodedToken._id)
         res.status(200).json({
-            id: decodedToken._id,
-            email: user?.email,
-            login: user?.login,
+            id: user.id,
+            email: user.email,
+            login: user.login,
         })
 
     } catch (e) {
@@ -137,7 +101,7 @@ export const activateEmailUserController = async (req: Request, res: Response) =
             )
             return
         }
-        const activate = await userService.activate(confirmationCode)
+        const activate = await authService.activate(confirmationCode)
         if (activate) {
             res.status(204).json(activate)
         } else {

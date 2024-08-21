@@ -5,10 +5,6 @@ import {Blog} from "../types/blogs.interface";
 // сразу отправляем в качестве ответа
 
 export const blogsQueryRepository = {
-    async getAllBlogs() {
-        const blogs = await blogCollection.find().toArray()
-        return blogs.map(blog => this.blogMapOutput(blog))
-    },
 
     async blogsSortWithQuery(query: any) {
         const queryName = query.searchNameTerm !== null ? query.searchNameTerm : ''
@@ -40,5 +36,11 @@ export const blogsQueryRepository = {
             createdAt,
             description
         }
-    }
+    },
+
+    // async getAllBlogs() {
+    //     const blogs = await blogCollection.find().toArray()
+    //     return blogs.map(blog => this.blogMapOutput(blog))
+    // }
+
 }
