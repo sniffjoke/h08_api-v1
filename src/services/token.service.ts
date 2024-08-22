@@ -6,14 +6,23 @@ import {ApiError} from "../exceptions/api.error";
 export const tokenService = {
 
     createToken(userId: string) {
-         const token = jwt.sign(
+        const accessToken = jwt.sign(
             {_id: userId},
             SETTINGS.VARIABLES.JWT_SECRET_ACCESS_TOKEN as string,
             // {expiresIn: 60*60*1000}
-            {expiresIn: '15s'}
+            {expiresIn: '10s'}
+        )
+        const refreshToken = jwt.sign(
+            {_id: userId},
+            SETTINGS.VARIABLES.JWT_SECRET_REFRESH_TOKEN as string,
+            // {expiresIn: 60*60*1000}
+            {expiresIn: '20s'}
         )
 
-        return token
+        return {
+            accessToken,
+            refreshToken
+        }
     },
 
     decodeToken(token: string) {

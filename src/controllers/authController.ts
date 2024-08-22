@@ -26,11 +26,10 @@ export const registerController = async (req: Request, res: Response, next: Next
             )
         }
 
-        const userId = await usersRepository.createUser({email, password: hashPassword, login}, emailConfirmation)
+        await usersRepository.createUser({email, password: hashPassword, login}, emailConfirmation)
         const mailService = new MailService()
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/registration-confirmation/?code=${activationLink}`)
-        const token = tokenService.createToken(userId.toString())
-        res.status(204).send({accessToken: token})
+        res.status(204).send('Письмо с активацией отправлено')
     } catch (e) {
         next(e)
     }
@@ -42,7 +41,9 @@ export const loginController = async (req: Request, res: Response, next: NextFun
         const user = await authService.validateUser(loginOrEmail)
         await authService.isPasswordCorrect(password, user.password)
         const token = tokenService.createToken(user._id.toString())
-        res.status(200).json({accessToken: token})
+        const {accessToken, refreshToken} = token
+        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true })
+        res.status(200).json({accessToken})
     } catch
         (e) {
         return next(e)
@@ -96,6 +97,15 @@ export const resendEmailController = async (req: Request, res: Response, next: N
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/registration-confirmation/?code=${activationLink}`)
         await authService.userUpdateWithEmailConfirmation(email, emailConfirmation)
         res.status(204).send('Ссылка повторна отправлена')
+    } catch (e) {
+        next(e)
+    }
+}
+
+export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const refreshToken = req.cookies
+
     } catch (e) {
         next(e)
     }
