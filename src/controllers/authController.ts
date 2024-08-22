@@ -53,7 +53,8 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
     try {
         const token = tokenService.getToken(req.headers.authorization)
         const decodedToken: any = tokenService.decodeToken(token)
-        const user = await usersQueryRepository.userOutput(decodedToken._id)
+        const userCorresponds = await authService.checkUserExistsForToken(decodedToken._id)
+        const user = await usersQueryRepository.userOutput(userCorresponds?._id.toString())
         res.status(200).json({
             id: user.id,
             email: user.email,

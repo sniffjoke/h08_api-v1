@@ -10,7 +10,7 @@ export const idUserValidator = param('id')
         } else {
             return !!user
         }
-    }).withMessage('Пост с заданным id не найден!')
+    }).withMessage('Пользователь с заданным id не найден!')
 
 export const loginAndEmailAuthLoginValidator = body('loginOrEmail')
     .isString().withMessage('Должно быть строковым значением')

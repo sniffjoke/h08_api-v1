@@ -9,7 +9,8 @@ export const tokenService = {
          const token = jwt.sign(
             {_id: userId},
             SETTINGS.VARIABLES.JWT_SECRET_ACCESS_TOKEN as string,
-            {expiresIn: 60*60*1000}
+            // {expiresIn: 60*60*1000}
+            {expiresIn: '15s'}
         )
 
         return token

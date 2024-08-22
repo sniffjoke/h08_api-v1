@@ -67,6 +67,15 @@ export const authService = {
 
     async userUpdateWithEmailConfirmation(email: string, confirmationCode: EmailConfirmationModel) {
         const user = await authRepository.updateUserWithResendActivateEmail(email, confirmationCode)
+        //
+        return user
+    },
+
+    async checkUserExistsForToken(id: string) {
+        const user = await usersRepository.findUserById(id)
+        if (!user) {
+            throw ApiError.BadRequest('Токен не валидный', 'token')
+        }
         return user
     }
 
