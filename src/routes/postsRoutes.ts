@@ -12,7 +12,8 @@ import {
     idPostValidator
 } from "../middlewares/postsValidators";
 import {errorMiddleware} from "../middlewares/errorMiddleware";
-import {authMiddleware, authMiddlewareWithBearer} from "../middlewares/authMiddleware";
+import {authMiddlewareWithBasic} from "../middlewares/authMiddlewareWithBasic";
+import {authMiddlewareWithBearer} from "../middlewares/authMiddlewareWithBearer"
 import {createCommentByPostIdWithParamsController, getAllCommentsByPostIdController} from "../controllers/commentsController";
 import {contentCommentValidator} from "../middlewares/commentsValidators";
 
@@ -22,7 +23,7 @@ const router = express.Router();
 router.route('/')
     .get(getPostsController)
     .post(
-        authMiddleware,
+        authMiddlewareWithBasic,
         titlePostValidator,
         contentPostValidator,
         blogIdValidator,
@@ -33,7 +34,7 @@ router.route('/')
 
 router.route('/:id')
     .put(
-        authMiddleware,
+        authMiddlewareWithBasic,
         idPostValidator,
         titlePostValidator,
         contentPostValidator,
@@ -43,7 +44,7 @@ router.route('/:id')
         updatePostController
     )
     .delete(
-        authMiddleware,
+        authMiddlewareWithBasic,
         idPostValidator,
         errorMiddleware,
         deletePostController

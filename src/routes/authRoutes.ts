@@ -6,7 +6,7 @@ import {
     registerController, resendEmailController
 } from "../controllers/authController";
 import {errorMiddleware} from "../middlewares/errorMiddleware";
-import {authMiddlewareWithBearer} from "../middlewares/authMiddleware";
+import {authMiddlewareWithBearer} from "../middlewares/authMiddlewareWithBearer"
 import {
     emailAuthRegisterValidator,
     loginAuthRegisterValidator,
@@ -18,9 +18,6 @@ const router = express.Router();
 
 router.route('/login')
     .post(
-        // loginUserValidator,
-        // passwordUserValidator,
-        // emailResending,
         errorMiddleware,
         loginController
     );

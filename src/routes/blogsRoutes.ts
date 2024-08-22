@@ -11,7 +11,7 @@ import {
     websiteUrlValidator
 } from "../middlewares/blogsValidators";
 import {errorMiddleware} from "../middlewares/errorMiddleware";
-import {authMiddleware} from "../middlewares/authMiddleware";
+import {authMiddlewareWithBasic} from "../middlewares/authMiddlewareWithBasic";
 import {getAllPostsByBlogId, createPostByBlogIdWithParams} from "../controllers/postsController";
 import {
     contentPostValidator,
@@ -25,7 +25,7 @@ const router = express.Router();
 router.route('/')
     .get(getBlogsController)
     .post(
-        authMiddleware,
+        authMiddlewareWithBasic,
         nameBlogValidator,
         descriptionBlogValidator,
         websiteUrlValidator,
@@ -34,7 +34,7 @@ router.route('/')
     );
 router.route('/:id')
     .put(
-        authMiddleware,
+        authMiddlewareWithBasic,
         idBlogValidator,
         nameBlogValidator,
         websiteUrlValidator,
@@ -43,7 +43,7 @@ router.route('/:id')
         updateBlogController
     )
     .delete(
-        authMiddleware,
+        authMiddlewareWithBasic,
         idBlogValidator,
         errorMiddleware,
         deleteBlogController
@@ -61,7 +61,7 @@ router.route('/:id/posts')
         getAllPostsByBlogId
     )
     .post(
-        authMiddleware,
+        authMiddlewareWithBasic,
         idBlogValidator,
         contentPostValidator,
         shortDescriptionPostValidator,

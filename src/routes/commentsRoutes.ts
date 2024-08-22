@@ -7,7 +7,7 @@ import {
 } from "../controllers/commentsController";
 import {errorMiddleware} from "../middlewares/errorMiddleware";
 import {contentCommentValidator, idCommentValidator} from "../middlewares/commentsValidators";
-import {authMiddlewareWithBearer} from "../middlewares/authMiddleware";
+import {authMiddlewareWithBearer} from "../middlewares/authMiddlewareWithBearer"
 import {isOwnMiddleware} from "../middlewares/isOwnMiddleware";
 
 
