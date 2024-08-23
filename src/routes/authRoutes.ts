@@ -3,7 +3,7 @@ import {
     activateEmailUserController,
     getMeController,
     loginController, refreshTokenController,
-    registerController, resendEmailController
+    registerController, removeRefreshTokenController, resendEmailController
 } from "../controllers/authController";
 import {errorMiddleware} from "../middlewares/errorMiddleware";
 import {authMiddlewareWithBearer} from "../middlewares/authMiddlewareWithBearer"
@@ -55,6 +55,11 @@ router.route('/me')
 router.route('/refresh-token')
     .post(
         refreshTokenController
+    )
+
+router.route('/logout')
+    .post(
+        removeRefreshTokenController
     )
 
 export default router

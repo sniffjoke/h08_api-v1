@@ -11,6 +11,7 @@ import {authService} from "../services/auth.service";
 import {tokenCollection} from "../db/mongo-db";
 import {WithId} from "mongodb";
 import {RTokenDB} from "../types/tokens.interface";
+import {ApiError} from "../exceptions/api.error";
 
 
 export const registerController = async (req: Request, res: Response, next: NextFunction) => {
@@ -45,8 +46,12 @@ export const loginController = async (req: Request, res: Response, next: NextFun
         await authService.isPasswordCorrect(password, user.password)
         const token = tokenService.createToken(user._id.toString())
         const {accessToken, refreshToken} = token
-        await tokenCollection.insertOne({userId: user._id.toString(), refreshToken, blackList: false} as WithId<RTokenDB>)
-        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true })
+        await tokenCollection.insertOne({
+            userId: user._id.toString(),
+            refreshToken,
+            blackList: false
+        } as WithId<RTokenDB>)
+        res.cookie('refreshToken', refreshToken, {httpOnly: true, secure: true})
         res.status(200).json({accessToken})
     } catch
         (e) {
@@ -113,9 +118,29 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
         const {tokens, userId} = newTokenData
         // await tokenService.saveToken(userData?.userId as string, Object.values(refreshToken)[0])
         // res.status(200).send(userData)
-        await tokenCollection.insertOne({userId, refreshToken: tokens.refreshToken, blackList: false} as WithId<RTokenDB>)
-        res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true })
+        await tokenCollection.insertOne({
+            userId,
+            refreshToken: tokens.refreshToken,
+            blackList: false
+        } as WithId<RTokenDB>)
+        res.cookie('refreshToken', tokens.refreshToken, {httpOnly: true, secure: true})
         res.status(200).json({accessToken: tokens.refreshToken})
+    } catch (e) {
+        next(e)
+    }
+}
+
+export const removeRefreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const token = req.headers.cookie?.split('=')[1] as string
+        const tokenFromDb = await tokenCollection.findOne({refreshToken: token})
+        if (!tokenFromDb) {
+            next(ApiError.UnauthorizedError())
+        } else {
+            await tokenCollection.updateOne({refreshToken: tokenFromDb?.refreshToken}, {$set: {blackList: true}})
+            res.clearCookie('refreshToken')
+            res.status(204).send('Logout')
+        }
     } catch (e) {
         next(e)
     }
