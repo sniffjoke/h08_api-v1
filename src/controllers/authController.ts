@@ -108,8 +108,8 @@ export const resendEmailController = async (req: Request, res: Response, next: N
 
 export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.cookies
-        const newTokenData = await tokenService.refreshToken(Object.values(token)[0])
+        const token = req.headers.cookie?.split('=')[1] as string
+        const newTokenData = await tokenService.refreshToken(token)
         const {tokens, userId} = newTokenData
         // await tokenService.saveToken(userData?.userId as string, Object.values(refreshToken)[0])
         // res.status(200).send(userData)

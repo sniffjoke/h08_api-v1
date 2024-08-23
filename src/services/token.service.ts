@@ -50,16 +50,23 @@ export const tokenService = {
     },
 
     async refreshToken(refreshToken: string) {
+        console.log(refreshToken)
         const tokenData: any = this.validateRefreshToken(refreshToken)
+        console.log(tokenData)
          if (!tokenData) {
             throw ApiError.UnauthorizedError()
         }
-        const token = await tokenCollection.findOne({userId: tokenData._id})
+        console.log(3)
+        const token = await tokenCollection.findOne({refreshToken})
+        console.log(token)
         if (!token || token.blackList) {
             throw ApiError.UnauthorizedError()
         }
+        console.log(5)
         await tokenCollection.updateOne({_id: token._id}, {$set: {blackList: true}})
+        console.log(6)
         const tokens = this.createToken(token.userId)
+        console.log(7)
         return {
             tokens,
             userId: token.userId
