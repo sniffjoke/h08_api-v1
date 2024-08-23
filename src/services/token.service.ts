@@ -13,13 +13,13 @@ export const tokenService = {
             {_id: userId},
             SETTINGS.VARIABLES.JWT_SECRET_ACCESS_TOKEN as string,
             // {expiresIn: 60*60*1000}
-            {expiresIn: '100s'}
+            {expiresIn: '10s'}
         )
         const refreshToken = jwt.sign(
             {_id: userId},
             SETTINGS.VARIABLES.JWT_SECRET_REFRESH_TOKEN as string,
             // {expiresIn: 60*60*1000}
-            {expiresIn: '200s'}
+            {expiresIn: '20s'}
         )
         return {
             accessToken,
