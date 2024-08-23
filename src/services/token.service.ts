@@ -47,7 +47,7 @@ export const tokenService = {
          if (!tokenData) {
             throw ApiError.AnyUnauthorizedError(`${refreshToken} -------------- ${refr}`)
         }
-        const token = await tokenCollection.findOne({refreshToken})
+        const token = await tokenCollection.findOne({refreshToken: refr})
         if (!token || token.blackList) {
             throw ApiError.BadRequest('3', '4')
         }
