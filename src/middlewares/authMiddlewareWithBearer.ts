@@ -23,6 +23,6 @@ export const authMiddlewareWithBearer = (req: Request, res: Response, next: Next
         next()
     } catch (e) {
         // return next(ApiError.UnauthorizedError())
-        return next(ApiError.AnyUnauthorizedError('4'))
+        return next(ApiError.AnyUnauthorizedError(token))
     }
 }
