@@ -52,7 +52,7 @@ export const tokenService = {
     async refreshToken(refreshToken: string) {
         const tokenData: any = this.validateRefreshToken(refreshToken)
          if (!tokenData) {
-            throw ApiError.BadRequest('1', '2')
+            throw ApiError.UnauthorizedError()
         }
         const token = await tokenCollection.findOne({refreshToken})
         if (!token || token.blackList) {
