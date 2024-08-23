@@ -136,14 +136,15 @@ export const removeRefreshTokenController = async (req: Request, res: Response, 
         // const token = req.headers.cookie?.split('=')[1] as string
         const token = Object.values(req.cookies)[0]
         // const tokenFromDb = await tokenCollection.findOne({refreshToken: token})
-        // console.log(tokenFromDb)
-        // if (!tokenFromDb) {
-        //     next(ApiError.UnauthorizedError())
-        // } else {
-            await tokenCollection.updateOne({refreshToken: token}, {$set: {blackList: true}})
+        const tokenFromDb = tokenService.validateRefreshToken(token)
+        console.log(tokenFromDb)
+        if (!tokenFromDb) {
+            next(ApiError.UnauthorizedError())
+        } else {
+            await tokenCollection.updateOne({refreshToken: tokenFromDb}, {$set: {blackList: true}})
             res.clearCookie('refreshToken')
             res.status(200).send('Logout')
-        // }
+        }
     } catch (e) {
         next(e)
     }
