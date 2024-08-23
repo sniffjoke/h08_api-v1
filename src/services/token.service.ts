@@ -40,13 +40,14 @@ export const tokenService = {
     },
 
     async refreshToken(refreshToken: string) {
+        console.log(refreshToken)
         const tokenData: any = this.validateRefreshToken(refreshToken)
          if (!tokenData) {
-            throw ApiError.AnyUnauthorizedError(`${refreshToken} -------------- ${refreshToken}`)
+            throw ApiError.UnauthorizedError()
         }
         const token = await tokenCollection.findOne({refreshToken})
         if (!token || token.blackList) {
-            throw ApiError.BadRequest('3', '4')
+            throw ApiError.UnauthorizedError()
         }
         await tokenCollection.updateOne({_id: token._id}, {$set: {blackList: true}})
         const tokens = this.createToken(token.userId)

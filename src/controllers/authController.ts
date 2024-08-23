@@ -113,7 +113,9 @@ export const resendEmailController = async (req: Request, res: Response, next: N
 
 export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.headers.cookie?.split('=')[1].split(';')[0] as string
+        // const token = req.headers.cookie?.split('=')[1].split(';')[0] as string
+        // const token = req.headers.cookie?.split('=')[1] as string
+        const token = Object.values(req.cookies)[0]
         const newTokenData = await tokenService.refreshToken(token)
         const {tokens, userId} = newTokenData
         await tokenCollection.insertOne({
@@ -121,8 +123,9 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
             refreshToken: tokens.refreshToken,
             blackList: false
         } as WithId<RTokenDB>)
-        res.clearCookie('refreshToken')
-        res.cookie('refreshToken', tokens.refreshToken.split(';')[0], {httpOnly: true, secure: true})
+        console.log(userId)
+        // res.cookie('refreshToken', tokens.refreshToken.split(';')[0], {httpOnly: true, secure: true})
+        res.cookie('refreshToken', tokens.refreshToken, {httpOnly: true, secure: true})
         res.status(200).json({accessToken: tokens.refreshToken})
     } catch (e) {
         next(e)
