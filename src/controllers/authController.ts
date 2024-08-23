@@ -62,9 +62,11 @@ export const loginController = async (req: Request, res: Response, next: NextFun
 export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const token = tokenService.getToken(req.headers.authorization)
+        console.log(token)
         const decodedToken: any = tokenService.decodeToken(token)
-        const userCorresponds = await authService.checkUserExistsForToken(decodedToken._id)
-        const user = await usersQueryRepository.userOutput(userCorresponds?._id.toString())
+        console.log(decodedToken)
+        // const userCorresponds = await authService.checkUserExistsForToken(decodedToken._id)
+        const user = await usersQueryRepository.userOutput(decodedToken?._id.toString())
         res.status(200).json({
             userId: user.id,
             email: user.email,
@@ -123,7 +125,6 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
             refreshToken: tokens.refreshToken,
             blackList: false
         } as WithId<RTokenDB>)
-        console.log(userId)
         // res.cookie('refreshToken', tokens.refreshToken.split(';')[0], {httpOnly: true, secure: true})
         res.cookie('refreshToken', tokens.refreshToken, {httpOnly: true, secure: true})
         res.status(200).json({accessToken: tokens.refreshToken})
