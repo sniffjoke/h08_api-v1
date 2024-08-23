@@ -133,7 +133,8 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
 
 export const removeRefreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.headers.cookie?.split('=')[1].split(';')[0] as string
+        // const token = req.headers.cookie?.split('=')[1].split(';')[0] as string
+        const token = Object.values(req.cookies)[0]
         const isExpired = tokenService.validateRefreshToken(token)
         if (!isExpired) {
             next(ApiError.AnyUnauthorizedError(`token: ${token}`))
