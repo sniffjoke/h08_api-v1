@@ -62,9 +62,7 @@ export const loginController = async (req: Request, res: Response, next: NextFun
 export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const token = tokenService.getToken(req.headers.authorization)
-        console.log(token)
         const decodedToken: any = tokenService.decodeToken(token)
-        console.log(decodedToken)
         // const userCorresponds = await authService.checkUserExistsForToken(decodedToken._id)
         const user = await usersQueryRepository.userOutput(decodedToken?._id.toString())
         res.status(200).json({

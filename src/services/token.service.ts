@@ -57,6 +57,15 @@ export const tokenService = {
         }
     },
 
+    validateAccessToken(token: string) {
+        try {
+            const userData = jwt.verify(token, SETTINGS.VARIABLES.JWT_SECRET_ACCESS_TOKEN as string)
+            return userData
+        } catch (e) {
+            return null
+        }
+    },
+
     validateRefreshToken(token: string) {
         try {
             const userData = jwt.verify(token, SETTINGS.VARIABLES.JWT_SECRET_REFRESH_TOKEN as string)
