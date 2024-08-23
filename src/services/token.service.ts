@@ -32,7 +32,7 @@ export const tokenService = {
     },
 
     getToken(bearerToken: string | undefined) {
-        const token = bearerToken ? bearerToken.split(' ')[1] : undefined
+        const token = bearerToken ? bearerToken.split(' ')[1] as string : undefined
         if (!token) {
             throw ApiError.UnauthorizedError()
         }
