@@ -40,9 +40,10 @@ export const tokenService = {
     },
 
     async refreshToken(refreshToken: string) {
-        const tokenData: any = this.validateRefreshToken(refreshToken)
+        const refr = refreshToken ? refreshToken.split(';')[0] : ''
+        const tokenData: any = this.validateRefreshToken(refr)
          if (!tokenData) {
-            throw ApiError.AnyUnauthorizedError(refreshToken)
+            throw ApiError.AnyUnauthorizedError(`refreshToken,    refr`)
         }
         const token = await tokenCollection.findOne({refreshToken})
         if (!token || token.blackList) {
