@@ -52,7 +52,7 @@ router.route('/me')
         getMeController
     );
 
-router.route('/refresh')
+router.route('/refresh-token')
     .post(
         refreshTokenController
     )
