@@ -1,4 +1,4 @@
-import {codeAuth, req} from './test-helpers'
+import {codeAuth, mockBlog, req} from './test-helpers'
 import {SETTINGS} from '../../h05_api-v1/src/settings'
 import {blogCollection, client, connectToDB, postCollection, userCollection} from "../../h05_api-v1/src/db/mongo-db";
 import {BlogDBType} from "../../h05_api-v1/src/dtos/blogs.dto";
@@ -17,17 +17,13 @@ describe('/blogs', () => {
     })
 
     it('should created Blog', async () => {
-        const newBlog: BlogDBType = {
-            name: 'n1',
-            description: 'd1',
-            websiteUrl: 'http://some.com'
-        }
+        const newBlog: BlogDBType = mockBlog
 
-
+        console.log(newBlog)
         const res = await req
             .post(SETTINGS.PATH.BLOGS)
-            // .set({'Authorization': `Basic ` + codeAuth(SETTINGS.PATH.ADMIN)})
-            .set({'Authorization': `Bearer ` + codeAuth(SETTINGS.PATH.ADMIN)})
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.PATH.ADMIN)})
+            // .set({'Authorization': `Bearer ` + codeAuth(SETTINGS.PATH.ADMIN)})
             .send(newBlog)
             .expect(201)
 

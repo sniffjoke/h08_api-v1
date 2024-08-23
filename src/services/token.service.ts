@@ -2,8 +2,7 @@ import * as jwt from 'jsonwebtoken';
 import {SETTINGS} from "../settings";
 import {ApiError} from "../exceptions/api.error";
 import {tokenCollection} from "../db/mongo-db";
-import {RTokenDB} from "../types/tokens.interface";
-import {WithId} from "mongodb";
+
 
 
 export const tokenService = {
@@ -40,17 +39,8 @@ export const tokenService = {
         return token
     },
 
-    async saveToken(userId: string, token: string) {
-        const tokenData: WithId<RTokenDB> | null = await tokenCollection.findOne({userId})
-        if (!tokenData) {
-            throw ApiError.UnauthorizedError()
-        }
-        await tokenCollection.updateOne({userId: tokenData.userId}, {$set: {blackList: true}})
-        return tokenData
-    },
-
     async refreshToken(refreshToken: string) {
-        const tokenData: any = this.validateRefreshToken(refreshToken)
+        const tokenData: any = this.validateRefreshToken(refreshToken.split(';')[0])
          if (!tokenData) {
             throw ApiError.AnyUnauthorizedError(refreshToken)
         }

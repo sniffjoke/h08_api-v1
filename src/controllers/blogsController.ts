@@ -32,7 +32,6 @@ export const getBlogByIdController = async (req: Request, res: Response) => {
 export const createBlogController = async (req: Request, res: Response) => {
     try {
         const newBlogId = await blogsRepository.createBlog(req.body)
-        // const newBlogMap = blogsQueryRepository.blogMapOutput(newBlog as Blog)
         const newBlog = await blogsQueryRepository.blogOutput(newBlogId.toString())
         res.status(201).json(newBlog)
     } catch (e) {
