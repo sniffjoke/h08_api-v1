@@ -121,6 +121,7 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
             refreshToken: tokens.refreshToken,
             blackList: false
         } as WithId<RTokenDB>)
+        res.clearCookie('refreshToken')
         res.cookie('refreshToken', tokens.refreshToken, {httpOnly: true, secure: true})
         res.status(200).json({accessToken: tokens.refreshToken})
     } catch (e) {
