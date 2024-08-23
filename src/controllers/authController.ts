@@ -135,11 +135,9 @@ export const removeRefreshTokenController = async (req: Request, res: Response, 
     try {
         // const token = req.headers.cookie?.split('=')[1] as string
         const token = Object.values(req.cookies)[0]
-        // const tokenFromDb = await tokenCollection.findOne({refreshToken: token})
-        const tokenFromDb = tokenService.validateRefreshToken(token)
-        console.log(tokenFromDb)
+        const tokenFromDb = await tokenCollection.findOne({refreshToken: token})
         if (!tokenFromDb) {
-            next(ApiError.UnauthorizedError())
+            next(ApiError.AnyUnauthorizedError(token))
         } else {
             await tokenCollection.updateOne({refreshToken: tokenFromDb}, {$set: {blackList: true}})
             res.clearCookie('refreshToken')
