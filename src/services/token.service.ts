@@ -18,7 +18,7 @@ export const tokenService = {
             {_id: userId},
             SETTINGS.VARIABLES.JWT_SECRET_REFRESH_TOKEN as string,
             // {expiresIn: 60*60*1000}
-            {expiresIn: '22s'}
+            {expiresIn: '20s'}
         )
         return {
             accessToken,
@@ -58,10 +58,10 @@ export const tokenService = {
 
     validateRefreshToken(token: string) {
         try {
-            const userData = jwt.verify(token, SETTINGS.VARIABLES.JWT_SECRET_REFRESH_TOKEN as string);
-            return userData;
+            const userData = jwt.verify(token, SETTINGS.VARIABLES.JWT_SECRET_REFRESH_TOKEN as string)
+            return userData
         } catch (e) {
-            return null;
+            return null
         }
     }
 
