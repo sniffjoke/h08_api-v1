@@ -124,8 +124,8 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
             blackList: false
         } as WithId<RTokenDB>)
         res.clearCookie('refreshToken')
-        res.cookie('refreshToken', tokens.refreshToken.split(';')[0], {httpOnly: true, secure: true})
-        // res.cookie('refreshToken', tokens.refreshToken, {httpOnly: true, secure: true})
+        // res.cookie('refreshToken', tokens.refreshToken.split(';')[0], {httpOnly: true, secure: true})
+        res.cookie('refreshToken', tokens.refreshToken, {httpOnly: true, secure: true})
         res.status(200).json({accessToken: tokens.refreshToken})
     } catch (e) {
         next(e)
@@ -135,7 +135,7 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
 export const removeRefreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         // const token = req.headers.cookie?.split('=')[1].split(';')[0] as string
-        const token = Object.values(req.cookies)[0]
+        const token = Object.values(req.cookies)[0].split(';')[0]
         const isExpired = tokenService.validateRefreshToken(token)
         if (!isExpired) {
             next(ApiError.AnyUnauthorizedError(`token: ${token}`))
