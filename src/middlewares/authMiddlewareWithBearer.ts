@@ -5,16 +5,19 @@ import {tokenService} from "../services/token.service";
 export const authMiddlewareWithBearer = (req: Request, res: Response, next: NextFunction) => {
     let token = req.headers.authorization
     if (!token) {
-        next(ApiError.UnauthorizedError())
+        // next(ApiError.UnauthorizedError())
+        next(ApiError.AnyUnauthorizedError('1'))
     }
     try {
         token = token!.split(' ')[1]
         if (token === null || !token) {
-            next(ApiError.UnauthorizedError())
+            // next(ApiError.UnauthorizedError())
+            next(ApiError.AnyUnauthorizedError('2'))
         }
         let verifyToken = tokenService.validateAccessToken(token)
         if (!verifyToken) {
-            next(ApiError.UnauthorizedError())
+            // next(ApiError.UnauthorizedError())
+            next(ApiError.AnyUnauthorizedError('3'))
         }
         next()
     } catch (e) {
