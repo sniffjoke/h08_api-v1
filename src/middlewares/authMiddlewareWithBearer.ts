@@ -3,13 +3,13 @@ import {ApiError} from "../exceptions/api.error";
 import {tokenService} from "../services/token.service";
 
 export const authMiddlewareWithBearer = (req: Request, res: Response, next: NextFunction) => {
-    let token = req.headers.authorization
+    let token = req.headers.authorization as string
     if (!token) {
         // next(ApiError.UnauthorizedError())
         next(ApiError.AnyUnauthorizedError('1'))
     }
     try {
-        token = token!.split(' ')[1]
+        token = token!.split(' ')[1] as string
         if (token === null || !token) {
             // next(ApiError.UnauthorizedError())
             next(ApiError.AnyUnauthorizedError('2'))
