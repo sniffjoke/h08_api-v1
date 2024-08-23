@@ -141,7 +141,7 @@ export const removeRefreshTokenController = async (req: Request, res: Response, 
         } else {
             await tokenCollection.updateOne({refreshToken: tokenFromDb?.refreshToken}, {$set: {blackList: true}})
             res.clearCookie('refreshToken')
-            res.status(200).send('Logout')
+            res.status(204).send('Logout')
         }
     } catch (e) {
         next(e)
