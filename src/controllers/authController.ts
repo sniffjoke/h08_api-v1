@@ -51,7 +51,7 @@ export const loginController = async (req: Request, res: Response, next: NextFun
             refreshToken,
             blackList: false
         } as WithId<RTokenDB>)
-        res.cookie('refreshToken', refreshToken, {httpOnly: true, secure: true})
+        res.cookie('refreshToken', refreshToken.split(';')[0], {httpOnly: true, secure: true})
         res.status(200).json({accessToken})
     } catch
         (e) {
@@ -122,7 +122,7 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
             blackList: false
         } as WithId<RTokenDB>)
         res.clearCookie('refreshToken')
-        res.cookie('refreshToken', tokens.refreshToken, {httpOnly: true, secure: true})
+        res.cookie('refreshToken', tokens.refreshToken.split(';')[0], {httpOnly: true, secure: true})
         res.status(200).json({accessToken: tokens.refreshToken})
     } catch (e) {
         next(e)
