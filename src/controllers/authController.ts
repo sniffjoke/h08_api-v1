@@ -8,6 +8,9 @@ import {v4 as uuid} from 'uuid'
 import MailService from "../services/mail.service";
 import {add} from 'date-fns'
 import {authService} from "../services/auth.service";
+import {tokenCollection} from "../db/mongo-db";
+import {WithId} from "mongodb";
+import {RTokenDB} from "../types/tokens.interface";
 
 
 export const registerController = async (req: Request, res: Response, next: NextFunction) => {
@@ -23,7 +26,7 @@ export const registerController = async (req: Request, res: Response, next: Next
                     hours: 1,
                     minutes: 30,
                 }
-            )
+            ).toString()
         }
 
         await usersRepository.createUser({email, password: hashPassword, login}, emailConfirmation)
@@ -42,6 +45,7 @@ export const loginController = async (req: Request, res: Response, next: NextFun
         await authService.isPasswordCorrect(password, user.password)
         const token = tokenService.createToken(user._id.toString())
         const {accessToken, refreshToken} = token
+        await tokenCollection.insertOne({userId: user._id.toString(), refreshToken, blackList: false} as WithId<RTokenDB>)
         res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true })
         res.status(200).json({accessToken})
     } catch
@@ -57,7 +61,7 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
         const userCorresponds = await authService.checkUserExistsForToken(decodedToken._id)
         const user = await usersQueryRepository.userOutput(userCorresponds?._id.toString())
         res.status(200).json({
-            id: user.id,
+            userId: user.id,
             email: user.email,
             login: user.login,
         })
@@ -91,7 +95,7 @@ export const resendEmailController = async (req: Request, res: Response, next: N
                     hours: 1,
                     minutes: 30,
                 }
-            )
+            ).toString()
         }
         const mailService = new MailService()
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/registration-confirmation/?code=${activationLink}`)
@@ -104,8 +108,14 @@ export const resendEmailController = async (req: Request, res: Response, next: N
 
 export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const refreshToken = req.cookies
-
+        const token = req.cookies
+        const newTokenData = await tokenService.refreshToken(Object.values(token)[0])
+        const {tokens, userId} = newTokenData
+        // await tokenService.saveToken(userData?.userId as string, Object.values(refreshToken)[0])
+        // res.status(200).send(userData)
+        await tokenCollection.insertOne({userId, refreshToken: tokens.refreshToken, blackList: false} as WithId<RTokenDB>)
+        res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true, secure: true })
+        res.status(200).json({accessToken: tokens.refreshToken})
     } catch (e) {
         next(e)
     }

@@ -5,7 +5,7 @@ export interface User {
     createdAt: string;
     emailConfirmation: {
         confirmationCode?: string
-        expirationDate?: Date
+        expirationDate?: string
         isConfirmed: boolean
     }
 }

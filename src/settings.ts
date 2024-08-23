@@ -19,6 +19,7 @@ export const SETTINGS = {
         POST_COLLECTION_NAME: 'posts',
         USER_COLLECTION_NAME: 'users',
         COMMENT_COLLECTION_NAME: 'comments',
+        TOKEN_COLLECTION_NAME: 'tokens',
         ADMIN: process.env.ADMIN || 'admin:qwerty',
         JWT_SECRET_ACCESS_TOKEN: process.env.JWT_SECRET_ACCESS,
         JWT_SECRET_REFRESH_TOKEN: process.env.JWT_SECRET_REFRESH,

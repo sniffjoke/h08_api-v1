@@ -6,8 +6,6 @@ import {blogsQueryRepository} from "../queryRepositories/blogsQueryRepository";
 
 
 export const getBlogsController = async (req: Request<any, any, any, any>, res: Response) => {
-    // const query = await queryHelper(req.query, 'blogs')
-    // const blogs = await blogsRepository.getAllBlogs(query)
     const blogsQuery = await queryHelper(req.query, 'blogs')
     const blogs = await blogsQueryRepository.blogsSortWithQuery(blogsQuery)
     const {

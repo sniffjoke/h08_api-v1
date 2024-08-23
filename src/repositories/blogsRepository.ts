@@ -1,6 +1,5 @@
 import {blogCollection} from "../db/mongo-db";
 import {ObjectId, UpdateResult, WithId} from "mongodb";
-import {blogsQueryRepository} from "../queryRepositories/blogsQueryRepository";
 import {BlogDBType} from "../dtos/blogs.dto";
 import {Blog} from "../types/blogs.interface";
 
@@ -19,7 +18,6 @@ export const blogsRepository = {
         return await blogCollection.findOne({_id: new ObjectId(id)})
     },
 
-    // async createBlog(newBlog: BlogDBType): Promise<Omit<Blog, '_id'>> {
     async createBlog(blogData: BlogDBType): Promise<ObjectId> {
         const blog: Blog = {
             name: blogData.name,

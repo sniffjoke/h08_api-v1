@@ -5,7 +5,7 @@ import {User} from "../types/users.interface";
 
 export interface EmailConfirmationModel {
         confirmationCode?: string
-        expirationDate?: Date
+        expirationDate?: string
         isConfirmed: boolean
 }
 

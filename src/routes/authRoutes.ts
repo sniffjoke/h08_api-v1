@@ -2,7 +2,7 @@ import express from "express";
 import {
     activateEmailUserController,
     getMeController,
-    loginController,
+    loginController, refreshTokenController,
     registerController, resendEmailController
 } from "../controllers/authController";
 import {errorMiddleware} from "../middlewares/errorMiddleware";
@@ -51,5 +51,10 @@ router.route('/me')
         errorMiddleware,
         getMeController
     );
+
+router.route('/refresh')
+    .post(
+        refreshTokenController
+    )
 
 export default router
