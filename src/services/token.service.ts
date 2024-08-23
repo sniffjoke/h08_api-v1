@@ -19,7 +19,7 @@ export const tokenService = {
             {_id: userId},
             SETTINGS.VARIABLES.JWT_SECRET_REFRESH_TOKEN as string,
             // {expiresIn: 60*60*1000}
-            {expiresIn: '20s'}
+            {expiresIn: '22s'}
         )
         return {
             accessToken,
