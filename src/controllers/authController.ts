@@ -116,8 +116,6 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
         const token = req.headers.cookie?.split('=')[1] as string
         const newTokenData = await tokenService.refreshToken(token)
         const {tokens, userId} = newTokenData
-        // await tokenService.saveToken(userData?.userId as string, Object.values(refreshToken)[0])
-        // res.status(200).send(userData)
         await tokenCollection.insertOne({
             userId,
             refreshToken: tokens.refreshToken,

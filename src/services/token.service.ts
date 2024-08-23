@@ -52,11 +52,11 @@ export const tokenService = {
     async refreshToken(refreshToken: string) {
         const tokenData: any = this.validateRefreshToken(refreshToken)
          if (!tokenData) {
-            throw ApiError.UnauthorizedError()
+            throw ApiError.BadRequest('1', '2')
         }
         const token = await tokenCollection.findOne({refreshToken})
         if (!token || token.blackList) {
-            throw ApiError.UnauthorizedError()
+            throw ApiError.BadRequest('3', '4')
         }
         await tokenCollection.updateOne({_id: token._id}, {$set: {blackList: true}})
         const tokens = this.createToken(token.userId)
