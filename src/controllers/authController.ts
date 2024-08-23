@@ -115,7 +115,7 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
     try {
         // const token = req.headers.cookie?.split('=')[1].split(';')[0] as string
         // const token = req.headers.cookie?.split('=')[1] as string
-        const token = Object.values(req.cookies)[0]
+        const token = Object.values(req.cookies)[0] as string
         const newTokenData = await tokenService.refreshToken(token)
         const {tokens, userId} = newTokenData
         await tokenCollection.insertOne({
@@ -135,7 +135,7 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
 export const removeRefreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         // const token = req.headers.cookie?.split('=')[1].split(';')[0] as string
-        const token = Object.values(req.cookies)[0].split(';')[0]
+        const token = Object.values(req.cookies)[0].split(';')[0] as string
         const isExpired = tokenService.validateRefreshToken(token)
         if (!isExpired) {
             next(ApiError.AnyUnauthorizedError(`token: ${token}`))
