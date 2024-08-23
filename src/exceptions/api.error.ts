@@ -18,4 +18,8 @@ export class ApiError extends Error {
         return new ApiError(400, message, field);
     }
 
+    static AnyUnauthorizedError(message: any) {
+        return new ApiError(401, message, 'Any UnauthorizedError')
+    }
+
 }
