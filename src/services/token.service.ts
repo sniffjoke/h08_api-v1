@@ -40,7 +40,7 @@ export const tokenService = {
     },
 
     async refreshToken(refreshToken: string) {
-        const tokenData: any = this.validateRefreshToken(refreshToken.split(';')[0])
+        const tokenData: any = this.validateRefreshToken(refreshToken)
          if (!tokenData) {
             throw ApiError.AnyUnauthorizedError(refreshToken)
         }
