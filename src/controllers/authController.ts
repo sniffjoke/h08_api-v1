@@ -67,7 +67,7 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
         if (token === null || token === undefined) {
             next(ApiError.AnyUnauthorizedError(req.headers))
         }
-        const decodedToken: any = jwt.decode(token.split(' ')[1])
+        const decodedToken: any = jwt.decode(token.split('=')[1])
         console.log(decodedToken)
         // const userCorresponds = await authService.checkUserExistsForToken(decodedToken?._id)
         const user = await usersQueryRepository.userOutput(decodedToken._id.toString())
@@ -76,7 +76,6 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
             email: user.email,
             login: user.login,
         })
-
     } catch (e) {
         next(e)
     }
