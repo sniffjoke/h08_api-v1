@@ -136,7 +136,7 @@ export const removeRefreshTokenController = async (req: Request, res: Response, 
         // const token = Object.values(req.cookies)[0]
         const token = req.cookies.refreshToken as string
         const tokenVerified = tokenService.validateRefreshToken(token)
-        if (tokenVerified) {
+        if (!tokenVerified) {
             next(ApiError.AnyUnauthorizedError(token))
         }
         const tokenFromDb = await tokenCollection.findOne({refreshToken: token as string})
