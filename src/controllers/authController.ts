@@ -12,7 +12,6 @@ import {tokenCollection} from "../db/mongo-db";
 import {WithId} from "mongodb";
 import {RTokenDB} from "../types/tokens.interface";
 import {ApiError} from "../exceptions/api.error";
-import * as jwt from 'jsonwebtoken';
 
 
 export const registerController = async (req: Request, res: Response, next: NextFunction) => {
@@ -61,16 +60,41 @@ export const loginController = async (req: Request, res: Response, next: NextFun
 }
 
 export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
+    // try {
+    //     // const token = req.headers.cookie?.split('=')[1] as string
+    //     const token = req.headers.authorization as string
+    //     if (!token) {
+    //         next(ApiError.AnyUnauthorizedError(req.headers))
+    //     }
+    //     const decodedToken: any = jwt.decode(token.split('=')[1])
+    //     console.log(decodedToken)
+    //     const userCorresponds = await authService.checkUserExistsForToken(decodedToken?._id)
+    //     const user = await usersQueryRepository.userOutput(userCorresponds._id.toString())
+    //     res.status(200).json({
+    //         userId: user.id,
+    //         email: user.email,
+    //         login: user.login,
+    //     })
+    // } catch (e) {
+    //     next(e)
+    // }
     try {
-        // const token = req.headers.cookie?.split('=')[1] as string
         const token = req.headers.authorization as string
         if (!token) {
-            next(ApiError.AnyUnauthorizedError(req.headers))
+            next(ApiError.UnauthorizedError())
         }
-        const decodedToken: any = jwt.decode(token.split('=')[1])
-        console.log(decodedToken)
-        const userCorresponds = await authService.checkUserExistsForToken(decodedToken?._id)
-        const user = await usersQueryRepository.userOutput(userCorresponds._id.toString())
+        const tokenSplit = token.split(' ')[1]
+        if (tokenSplit === null || !token) {
+            next(ApiError.UnauthorizedError())
+        }
+        let verifyToken: any = tokenService.validateAccessToken(tokenSplit)
+        if (!verifyToken) {
+            next(ApiError.UnauthorizedError())
+        }
+        const user = await usersQueryRepository.userOutput(verifyToken._id.toString())
+        if (!user) {
+            next(ApiError.UnauthorizedError())
+        }
         res.status(200).json({
             userId: user.id,
             email: user.email,
@@ -153,5 +177,6 @@ export const removeRefreshTokenController = async (req: Request, res: Response, 
     } catch (e) {
         next(e)
     }
+
 }
 

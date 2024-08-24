@@ -6,7 +6,6 @@ import {
     registerController, removeRefreshTokenController, resendEmailController
 } from "../controllers/authController";
 import {errorMiddleware} from "../middlewares/errorMiddleware";
-import {authMiddlewareWithBearer} from "../middlewares/authMiddlewareWithBearer"
 import {
     emailAuthRegisterValidator,
     loginAuthRegisterValidator,
@@ -47,8 +46,6 @@ router.route('/registration-email-resending')
 
 router.route('/me')
     .get(
-        authMiddlewareWithBearer,
-        errorMiddleware,
         getMeController
     );
 
