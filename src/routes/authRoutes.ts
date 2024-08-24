@@ -11,6 +11,7 @@ import {
     loginAuthRegisterValidator,
     passwordAuthRegisterValidator
 } from "../middlewares/authValidators";
+import {authMiddlewareWithBearer} from "../middlewares/authMiddlewareWithBearer";
 
 
 const router = express.Router();
@@ -46,6 +47,7 @@ router.route('/registration-email-resending')
 
 router.route('/me')
     .get(
+        authMiddlewareWithBearer,
         getMeController
     );
 

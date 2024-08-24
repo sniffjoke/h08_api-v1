@@ -8,10 +8,11 @@ import {v4 as uuid} from 'uuid'
 import MailService from "../services/mail.service";
 import {add} from 'date-fns'
 import {authService} from "../services/auth.service";
-import {tokenCollection} from "../db/mongo-db";
-import {WithId} from "mongodb";
+import {tokenCollection, userCollection} from "../db/mongo-db";
+import {ObjectId, WithId} from "mongodb";
 import {RTokenDB} from "../types/tokens.interface";
 import {ApiError} from "../exceptions/api.error";
+import * as jwt from 'jsonwebtoken'
 
 
 export const registerController = async (req: Request, res: Response, next: NextFunction) => {
@@ -78,32 +79,51 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
     // } catch (e) {
     //     next(e)
     // }
+    //-------------------------------------------------------------------------//
+    // try {
+    //     const token = req.headers.authorization as string
+    //     // const token = req.cookies['Authorization'] || (req.header('Authorization') ? req.header('Authorization').split('Bearer ')[1] : null)
+    //     if (!token) {
+    //         return next(ApiError.UnauthorizedError())
+    //     }
+    //     const tokenSplit = token.split(' ')[1]
+    //     if (tokenSplit === null || !token) {
+    //         return next(ApiError.AnyUnauthorizedError('no token'))
+    //     }
+    //     let verifyToken: any = tokenService.validateAccessToken(tokenSplit)
+    //     if (!verifyToken) {
+    //         return next(ApiError.AnyUnauthorizedError(token))
+    //     }
+    //     const user = await usersQueryRepository.userOutput(verifyToken?._id)
+    //     if (!user) {
+    //         return next(ApiError.AnyUnauthorizedError('no user'))
+    //     }
+    //     res.status(200).json({
+    //         userId: user.id,
+    //         email: user.email,
+    //         login: user.login,
+    //     })
+    // } catch (e) {
+    //     console.log(e)
+    //     next(e)
+    // }
     try {
-        const token = req.headers.authorization as string
-        // const token = req.cookies['Authorization'] || (req.header('Authorization') ? req.header('Authorization').split('Bearer ')[1] : null)
-        if (!token) {
-            return next(ApiError.UnauthorizedError())
+        const token = tokenService.getToken(req.headers.authorization)
+        if (token === undefined) {
+            res.status(401).send('Нет авторизации')
+            return
         }
-        const tokenSplit = token.split(' ')[1]
-        if (tokenSplit === null || !token) {
-            return next(ApiError.AnyUnauthorizedError('no token'))
-        }
-        let verifyToken: any = tokenService.validateAccessToken(tokenSplit)
-        if (!verifyToken) {
-            return next(ApiError.AnyUnauthorizedError(token))
-        }
-        const user = await usersQueryRepository.userOutput(verifyToken?._id)
-        if (!user) {
-            return next(ApiError.AnyUnauthorizedError('no user'))
-        }
+
+        const decodedToken: any = jwt.decode(token)
+        const user = await userCollection.findOne({_id: new ObjectId(decodedToken._id)})
         res.status(200).json({
-            userId: user.id,
-            email: user.email,
-            login: user.login,
+            userId: decodedToken._id,
+            email: user?.email,
+            login: user?.login,
         })
+
     } catch (e) {
-        console.log(e)
-        next(e)
+        res.status(500).send(e)
     }
 }
 
