@@ -66,7 +66,7 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
     //     if (!token) {
     //         next(ApiError.AnyUnauthorizedError(req.headers))
     //     }
-    //     const decodedToken: any = jwt.decode(token.split('=')[1])
+    //     const decodedToken: any = jwt.decode(token.split(' ')[1])
     //     console.log(decodedToken)
     //     const userCorresponds = await authService.checkUserExistsForToken(decodedToken?._id)
     //     const user = await usersQueryRepository.userOutput(userCorresponds._id.toString())
@@ -81,19 +81,19 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
     try {
         const token = req.headers.authorization as string
         if (!token) {
-            next(ApiError.UnauthorizedError())
+            return next(ApiError.UnauthorizedError())
         }
         const tokenSplit = token.split(' ')[1]
         if (tokenSplit === null || !token) {
-            next(ApiError.UnauthorizedError())
+            return next(ApiError.UnauthorizedError())
         }
         let verifyToken: any = tokenService.validateAccessToken(tokenSplit)
         if (!verifyToken) {
-            next(ApiError.AnyUnauthorizedError(tokenSplit))
+            return next(ApiError.AnyUnauthorizedError(tokenSplit))
         }
-        const user = await usersQueryRepository.userOutput(verifyToken._id.toString())
+        const user = await usersQueryRepository.userOutput(verifyToken?.id.toString())
         if (!user) {
-            next(ApiError.UnauthorizedError())
+            return next(ApiError.UnauthorizedError())
         }
         res.status(200).json({
             userId: user.id,
@@ -101,7 +101,7 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
             login: user.login,
         })
     } catch (e) {
-        next(e)
+        return next(e)
     }
 }
 
