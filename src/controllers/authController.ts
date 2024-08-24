@@ -93,7 +93,7 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
         // if (!decodedToken) {
         //     return next(ApiError.AnyUnauthorizedError(tokenSplit))
         // }
-        let verifyToken: any = tokenService.validateAccessToken(tokenSplit)
+        let verifyToken: any = tokenService.validateRefreshToken(tokenSplit)
         if (!verifyToken) {
             return next(ApiError.AnyUnauthorizedError(`${token} - token`))
         }
