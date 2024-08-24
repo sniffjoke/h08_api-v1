@@ -7,6 +7,7 @@ export const authMiddlewareWithBearer = (req: Request, res: Response, next: Next
     if (!token) {
         return next(ApiError.UnauthorizedError())
     }
+
     try {
         token = token.split(' ')[1]
         if (token === null || !token) {
