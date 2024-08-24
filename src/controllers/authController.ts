@@ -7,11 +7,10 @@ import {v4 as uuid} from 'uuid'
 import MailService from "../services/mail.service";
 import {add} from 'date-fns'
 import {authService} from "../services/auth.service";
-import {tokenCollection, userCollection} from "../db/mongo-db";
-import {ObjectId, WithId} from "mongodb";
+import {tokenCollection} from "../db/mongo-db";
+import {WithId} from "mongodb";
 import {RTokenDB} from "../types/tokens.interface";
 import {ApiError} from "../exceptions/api.error";
-import * as jwt from 'jsonwebtoken'
 import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
 
 
@@ -90,15 +89,15 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
         if (tokenSplit === null || !token) {
             return next(ApiError.AnyUnauthorizedError('no token'))
         }
-        let decodedToken:any = jwt.decode(tokenSplit)
-        if (!decodedToken) {
-            return next(ApiError.AnyUnauthorizedError(tokenSplit))
-        }
-        // let verifyToken: any = tokenService.validateAccessToken(tokenSplit)
-        // if (!verifyToken) {
-        //     return next(ApiError.AnyUnauthorizedError(token))
+        // let decodedToken:any = jwt.decode(tokenSplit)
+        // if (!decodedToken) {
+        //     return next(ApiError.AnyUnauthorizedError(tokenSplit))
         // }
-        const user = await usersQueryRepository.userOutput(decodedToken?._id)
+        let verifyToken: any = tokenService.validateAccessToken(tokenSplit)
+        if (!verifyToken) {
+            return next(ApiError.AnyUnauthorizedError(`${token} - token`))
+        }
+        const user = await usersQueryRepository.userOutput(verifyToken?._id)
         if (!user) {
             return next(ApiError.AnyUnauthorizedError('no user'))
         }
