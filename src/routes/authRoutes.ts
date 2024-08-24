@@ -12,6 +12,7 @@ import {
     loginAuthRegisterValidator,
     passwordAuthRegisterValidator
 } from "../middlewares/authValidators";
+import {errorCustomApiMiddleware} from "../middlewares/errorApiMiddleware";
 
 
 const router = express.Router();
@@ -49,6 +50,7 @@ router.route('/me')
     .get(
         authMiddlewareWithBearer,
         errorMiddleware,
+        errorCustomApiMiddleware,
         getMeController
     );
 
