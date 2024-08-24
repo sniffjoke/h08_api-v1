@@ -19,7 +19,6 @@ describe('/blogs', () => {
     it('should created Blog', async () => {
         const newBlog: BlogDBType = mockBlog
 
-        console.log(newBlog)
         const res = await req
             .post(SETTINGS.PATH.BLOGS)
             .set({'Authorization': `Basic ` + codeAuth(SETTINGS.PATH.ADMIN)})

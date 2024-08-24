@@ -1,6 +1,3 @@
-
-// готовые данные для переиспользования в тестах
-
 export const blog1: any /*VideoDBType*/ = {
     id: Date.now() + Math.random(),
     title: 't' + Date.now() + Math.random(),
@@ -11,12 +8,3 @@ export const blog1: any /*VideoDBType*/ = {
     // publicationDate: new Date().toISOString(),
     // availableResolution: [Resolutions.P240],
 }
-
-// ...
-
-// export const dataset1: Db = {
-    // videos: [video1],
-
-// }
-
-// ...
