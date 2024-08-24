@@ -7,7 +7,7 @@ import {tokenCollection} from "../db/mongo-db";
 
 export const tokenService = {
 
-    createToken(userId: string) {
+    createTokens(userId: string) {
         const accessToken = jwt.sign(
             {_id: userId},
             SETTINGS.VARIABLES.JWT_SECRET_ACCESS_TOKEN as string,
@@ -24,11 +24,6 @@ export const tokenService = {
             accessToken,
             refreshToken
         }
-    },
-
-    decodeToken(token: string) {
-        const decodedToken = jwt.decode(token)
-        return decodedToken
     },
 
     getToken(bearerToken: string | undefined) {
@@ -50,7 +45,7 @@ export const tokenService = {
             throw ApiError.UnauthorizedError()
         }
         await tokenCollection.updateOne({_id: token._id}, {$set: {blackList: true}})
-        const tokens = this.createToken(token.userId)
+        const tokens = this.createTokens(token.userId)
         return {
             tokens,
             userId: token.userId

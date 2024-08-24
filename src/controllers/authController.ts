@@ -44,7 +44,7 @@ export const loginController = async (req: Request, res: Response, next: NextFun
         const {loginOrEmail, password} = req.body;
         const user = await authService.validateUser(loginOrEmail)
         await authService.isPasswordCorrect(password, user.password)
-        const token = tokenService.createToken(user._id.toString())
+        const token = tokenService.createTokens(user._id.toString())
         const {accessToken, refreshToken} = token
         await tokenCollection.insertOne({
             userId: user._id.toString(),
@@ -63,10 +63,10 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
     try {
         // const token = tokenService.getToken(req.headers.authorization)
         const token = req.headers.cookie?.split('=')[1] as string
-        // console.log(token)
-        const decodedToken: any = tokenService.decodeToken(token)
+        console.log(token)
+        const validateToken: any = tokenService.validateAccessToken(token)
         // const userCorresponds = await authService.checkUserExistsForToken(decodedToken._id)
-        const user = await usersQueryRepository.userOutput(decodedToken?._id.toString())
+        const user = await usersQueryRepository.userOutput(validateToken._id.toString())
         res.status(200).json({
             userId: user.id,
             email: user.email,

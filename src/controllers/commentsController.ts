@@ -63,12 +63,12 @@ export const createCommentByPostIdWithParamsController = async (req: Request, re
             res.status(401).send('Нет авторизации')
             return
         }
-        const decodedToken: any = tokenService.decodeToken(token)
-        if (decodedToken === null) {
+        const validateToken: any = tokenService.validateAccessToken(token)
+        if (validateToken === null) {
             res.status(401).send('Нет авторизации')
             return
         }
-        const user = await userCollection.findOne({_id: new ObjectId(decodedToken._id)})
+        const user = await userCollection.findOne({_id: new ObjectId(validateToken._id)})
         const newCommentId = await commentsRepository.createComment({
             content: req.body.content,
             postId: post!._id.toString(),
