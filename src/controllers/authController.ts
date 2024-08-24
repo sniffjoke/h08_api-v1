@@ -89,7 +89,7 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
         }
         let verifyToken: any = tokenService.validateAccessToken(tokenSplit)
         if (!verifyToken) {
-            next(ApiError.UnauthorizedError())
+            next(ApiError.AnyUnauthorizedError(tokenSplit))
         }
         const user = await usersQueryRepository.userOutput(verifyToken._id.toString())
         if (!user) {
