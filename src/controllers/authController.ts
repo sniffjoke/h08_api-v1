@@ -62,8 +62,9 @@ export const loginController = async (req: Request, res: Response, next: NextFun
 
 export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.headers.cookie?.split('=')[1] as string
-        const decodedToken: any = jwt.decode(token)
+        // const token = req.headers.cookie?.split('=')[1] as string
+        const token = req.headers.authorization as string
+        const decodedToken: any = jwt.decode(token.split(' ')[1])
         console.log(decodedToken)
         // const userCorresponds = await authService.checkUserExistsForToken(decodedToken?._id)
         const user = await usersQueryRepository.userOutput(decodedToken._id.toString())
@@ -140,7 +141,6 @@ export const removeRefreshTokenController = async (req: Request, res: Response, 
             next(ApiError.AnyUnauthorizedError(token))
         }
         const tokenFromDb = await tokenCollection.findOne({refreshToken: token as string})
-        console.log(tokenFromDb)
         if (!tokenFromDb || tokenFromDb.blackList) {
             next(ApiError.UnauthorizedError())
         } else {

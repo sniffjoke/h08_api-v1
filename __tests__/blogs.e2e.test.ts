@@ -39,7 +39,16 @@ describe('/blogs', () => {
         expect(res.status).toBe(200)
         expect(res.body.items.length).toBeGreaterThan(0)
         // expect(res.body).toEqual()
-    })
+    });
+
+    it('should update one blog', async () => {
+        const res = await req
+            .put(SETTINGS.PATH.BLOGS)
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.PATH.ADMIN)})
+        expect(res.status).toBe(204)
+        expect(res.body.items.length).toBeGreaterThan(0)
+        // expect(res.body).toEqual()
+    });
 
 })
 
