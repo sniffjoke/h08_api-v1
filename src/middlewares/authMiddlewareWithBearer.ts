@@ -8,7 +8,7 @@ export const authMiddlewareWithBearer = (req: Request, res: Response, next: Next
         return next(ApiError.UnauthorizedError())
     }
     try {
-        token = token!.split(' ')[1] as string
+        token = token.split(' ')[1]
         if (token === null || !token) {
             return next(ApiError.UnauthorizedError())
         }
@@ -18,6 +18,6 @@ export const authMiddlewareWithBearer = (req: Request, res: Response, next: Next
         }
         next()
     } catch (e) {
-        return next(ApiError.UnauthorizedError())
+        return next(ApiError.AnyUnauthorizedError(token))
     }
 }
