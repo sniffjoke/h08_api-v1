@@ -1,5 +1,4 @@
 import {NextFunction, Request, Response} from 'express';
-import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
 import {tokenService} from "../services/token.service";
 import {userService} from "../services/user.service";
 import * as bcrypt from 'bcrypt';
@@ -117,7 +116,7 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
         const decodedToken: any = jwt.decode(token)
         const user = await userCollection.findOne({_id: new ObjectId(decodedToken._id)})
         res.status(200).json({
-            userId: decodedToken._id,
+            userId: user?._id,
             email: user?.email,
             login: user?.login,
         })

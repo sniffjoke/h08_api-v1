@@ -13,7 +13,7 @@ export const authMiddlewareWithBearer = (req: Request, res: Response, next: Next
         if (token === null || !token) {
             return next(ApiError.UnauthorizedError())
         }
-        let verifyToken = tokenService.validateAccessToken(token)
+        let verifyToken: any = tokenService.validateAccessToken(token)
         if (!verifyToken) {
             return next(ApiError.UnauthorizedError())
         }

@@ -48,6 +48,7 @@ router.route('/registration-email-resending')
 router.route('/me')
     .get(
         authMiddlewareWithBearer,
+        errorMiddleware,
         getMeController
     );
 
