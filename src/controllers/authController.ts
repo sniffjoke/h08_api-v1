@@ -91,6 +91,9 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
             return next(ApiError.AnyUnauthorizedError('no token'))
         }
         let decodedToken:any = jwt.decode(tokenSplit)
+        if (!decodedToken) {
+            return next(ApiError.AnyUnauthorizedError(tokenSplit))
+        }
         // let verifyToken: any = tokenService.validateAccessToken(tokenSplit)
         // if (!verifyToken) {
         //     return next(ApiError.AnyUnauthorizedError(token))
