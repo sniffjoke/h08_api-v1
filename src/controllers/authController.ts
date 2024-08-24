@@ -109,7 +109,7 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
         })
     } catch (e) {
         console.log(e)
-        next(e)
+        next(ApiError.AnyUnauthorizedError('catch'))
     }
     // try {
     //     const token = tokenService.getToken(req.headers.authorization)
