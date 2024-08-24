@@ -85,15 +85,15 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
         }
         const tokenSplit = token.split(' ')[1]
         if (tokenSplit === null || !token) {
-            return next(ApiError.UnauthorizedError())
+            return next(ApiError.AnyUnauthorizedError('no token split'))
         }
         let verifyToken: any = tokenService.validateAccessToken(tokenSplit)
         if (!verifyToken) {
-            return next(ApiError.AnyUnauthorizedError(tokenSplit))
+            return next(ApiError.AnyUnauthorizedError('no verify token provided'))
         }
         const user = await usersQueryRepository.userOutput(verifyToken?.id.toString())
         if (!user) {
-            return next(ApiError.UnauthorizedError())
+            return next(ApiError.AnyUnauthorizedError('no user'))
         }
         res.status(200).json({
             userId: user.id,
