@@ -80,18 +80,19 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
     // }
     try {
         const token = req.headers.authorization as string
+        // const token = req.cookies['Authorization'] || (req.header('Authorization') ? req.header('Authorization').split('Bearer ')[1] : null)
         if (!token) {
             return next(ApiError.UnauthorizedError())
         }
         const tokenSplit = token.split(' ')[1]
         if (tokenSplit === null || !token) {
-            return next(ApiError.AnyUnauthorizedError('no token split'))
+            return next(ApiError.AnyUnauthorizedError('no token'))
         }
         let verifyToken: any = tokenService.validateAccessToken(tokenSplit)
         if (!verifyToken) {
             return next(ApiError.AnyUnauthorizedError('no verify token provided'))
         }
-        const user = await usersQueryRepository.userOutput(verifyToken?.id.toString())
+        const user = await usersQueryRepository.userOutput(verifyToken?._id)
         if (!user) {
             return next(ApiError.AnyUnauthorizedError('no user'))
         }
@@ -101,6 +102,7 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
             login: user.login,
         })
     } catch (e) {
+        console.log(e)
         return next(e)
     }
 }
