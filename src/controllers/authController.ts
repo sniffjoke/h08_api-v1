@@ -12,6 +12,7 @@ import {tokenCollection} from "../db/mongo-db";
 import {WithId} from "mongodb";
 import {RTokenDB} from "../types/tokens.interface";
 import {ApiError} from "../exceptions/api.error";
+import * as jwt from 'jsonwebtoken';
 
 
 export const registerController = async (req: Request, res: Response, next: NextFunction) => {
@@ -61,12 +62,11 @@ export const loginController = async (req: Request, res: Response, next: NextFun
 
 export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // const token = tokenService.getToken(req.headers.authorization)
         const token = req.headers.cookie?.split('=')[1] as string
-        console.log(token)
-        const validateToken: any = tokenService.validateAccessToken(token)
-        // const userCorresponds = await authService.checkUserExistsForToken(decodedToken._id)
-        const user = await usersQueryRepository.userOutput(validateToken._id.toString())
+        const decodedToken: any = jwt.decode(token)
+        console.log(decodedToken)
+        // const userCorresponds = await authService.checkUserExistsForToken(decodedToken?._id)
+        const user = await usersQueryRepository.userOutput(decodedToken._id.toString())
         res.status(200).json({
             userId: user.id,
             email: user.email,
@@ -115,8 +115,6 @@ export const resendEmailController = async (req: Request, res: Response, next: N
 
 export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // const token = req.headers.cookie?.split('=')[1].split(';')[0] as string
-        // const token = req.headers.cookie?.split('=')[1] as string
         const token = Object.values(req.cookies)[0]
         const newTokenData = await tokenService.refreshToken(token)
         const {tokens, userId} = newTokenData
@@ -125,7 +123,6 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
             refreshToken: tokens.refreshToken,
             blackList: false
         } as WithId<RTokenDB>)
-        // res.cookie('refreshToken', tokens.refreshToken.split(';')[0], {httpOnly: true, secure: true})
         res.cookie('refreshToken', tokens.refreshToken, {httpOnly: true, secure: true})
         res.status(200).json({accessToken: tokens.refreshToken})
     } catch (e) {
