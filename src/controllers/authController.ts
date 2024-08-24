@@ -64,6 +64,9 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
     try {
         // const token = req.headers.cookie?.split('=')[1] as string
         const token = req.headers.authorization as string
+        if (token === null || token === undefined) {
+            next(ApiError.AnyUnauthorizedError(req.headers))
+        }
         const decodedToken: any = jwt.decode(token.split(' ')[1])
         console.log(decodedToken)
         // const userCorresponds = await authService.checkUserExistsForToken(decodedToken?._id)
