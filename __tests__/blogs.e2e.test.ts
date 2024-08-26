@@ -1,31 +1,28 @@
 import {codeAuth, mockBlog, req} from './test-helpers'
-import {SETTINGS} from '../../h05_api-v1/src/settings'
-import {blogCollection, client, connectToDB, postCollection, userCollection} from "../../h05_api-v1/src/db/mongo-db";
-import {BlogDBType} from "../../h05_api-v1/src/dtos/blogs.dto";
+import {blogCollection, client, connectToDB,} from "../src/db/mongo-db";
+import {BlogDBType} from "../src/dtos/blogs.dto";
+import {SETTINGS} from "../src/settings";
 
-describe('/blogs', () => {
 
+describe('blogs', () => {
     beforeAll(async () => { // очистка базы данных перед началом тестирования
         await connectToDB()
         await blogCollection.deleteMany()
-        await postCollection.deleteMany()
-        await userCollection.deleteMany()
     })
-
     afterAll(async () => {
         await client.close()
     })
 
-    it('should created Blog', async () => {
-        const newBlog: BlogDBType = mockBlog
+// --------------------------------------------------------------------------------------------- //
 
+    it('should created Blog', async () => {
+        const newBlog: BlogDBType = mockBlog(1)
         const res = await req
             .post(SETTINGS.PATH.BLOGS)
-            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.PATH.ADMIN)})
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
             // .set({'Authorization': `Bearer ` + codeAuth(SETTINGS.PATH.ADMIN)})
             .send(newBlog)
             .expect(201)
-
         expect(res.body.name).toEqual(newBlog.name)
         expect(res.body.description).toEqual(newBlog.description)
         expect(res.body.websiteUrl).toEqual(newBlog.websiteUrl)
@@ -34,6 +31,8 @@ describe('/blogs', () => {
         // expect(bodyResponse.body).toEqual({} as Blog)
     });
 
+// --------------------------------------------------------------------------------------------- //
+
     it('should return all blogs', async () => {
         const res = await req.get(SETTINGS.PATH.BLOGS)
         expect(res.status).toBe(200)
@@ -41,38 +40,54 @@ describe('/blogs', () => {
         // expect(res.body).toEqual()
     });
 
+// --------------------------------------------------------------------------------------------- //
+
     it('should update one blog', async () => {
-        const res = await req
-            .put(SETTINGS.PATH.BLOGS)
-            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.PATH.ADMIN)})
-        expect(res.status).toBe(204)
-        expect(res.body.items.length).toBeGreaterThan(0)
-        // expect(res.body).toEqual()
-    });
+        const newBlog = mockBlog(2)
+        const resCreate = await req
+            .post(SETTINGS.PATH.BLOGS)
+            .send(newBlog)
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
+            .expect(201)
+        const updateBlog = mockBlog(3)
+        const resUpdate = await req
+            .put(`${SETTINGS.PATH.BLOGS}` + '/' + `${resCreate.body.id}`)
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
+            .send(updateBlog)
+            .expect(204)
+        expect(typeof resUpdate.body).toEqual('object')
+        expect(resUpdate.status).toBe(204)
+    })
 
+// --------------------------------------------------------------------------------------------- //
+
+    it('should remove one blog', async () => {
+        const newBlog = mockBlog(4)
+        const resCreate = await req
+            .post(SETTINGS.PATH.BLOGS)
+            .send(newBlog)
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
+            .expect(201)
+        const resRemove = await req
+            .delete(`${SETTINGS.PATH.BLOGS}` + '/' + `${resCreate.body.id}`)
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
+            .expect(204)
+        expect(resRemove.status).toBe(204)
+    })
+
+// --------------------------------------------------------------------------------------------- //
+
+    it('should return one blog by id', async () => {
+        const newBlog = mockBlog(5)
+        const resCreate = await req
+            .post(SETTINGS.PATH.BLOGS)
+            .send(newBlog)
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
+            .expect(201)
+        const resGetBlogById = await req
+            .get(`${SETTINGS.PATH.BLOGS}` + '/' + `${resCreate.body.id}`)
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
+            .expect(200)
+        expect(resGetBlogById.status).toBe(200)
+    })
 })
-
-
-// it('should get empty array', async () => {
-//     // setDB() // очистка базы данных если нужно
-//
-//     const res = await req
-//         .get(SETTINGS.PATH.BLOGS)
-//         .expect(200) // проверяем наличие эндпоинта
-//
-//     console.log(res.body) // можно посмотреть ответ эндпоинта
-//
-//     // expect(res.body.length).toBe(0) // проверяем ответ эндпоинта
-// })
-// it('should get not empty array', async () => {
-//     // setDB(dataset1) // заполнение базы данных начальными данными если нужно
-//
-//     const res = await req
-//         .get(SETTINGS.PATH.BLOGS)
-//         .expect(200)
-//
-//     console.log(res.body)
-//
-//     // expect(res.body.length).toBe(1)
-//     // expect(res.body[0]).toEqual(dataset1.videos[0])
-// })

@@ -1,11 +1,12 @@
-import {codeAuth, mockBlog, req} from './test-helpers'
-import {SETTINGS} from '../../h05_api-v1/src/settings'
-import {client, connectToDB, postCollection} from "../../h05_api-v1/src/db/mongo-db";
-import {PostDBType} from "../../h05_api-v1/src/dtos/posts.dto";
+import {codeAuth, mockPost, req, testCreateBlogAndPost} from './test-helpers'
+import {SETTINGS} from '../src/settings'
+import {blogCollection, client, connectToDB, postCollection,} from "../src/db/mongo-db";
+import {PostDBType} from "../src/dtos/posts.dto";
 
-describe('/posts', () => {
+describe('posts', () => {
     beforeAll(async () => { // очистка базы данных перед началом тестирования
         await connectToDB()
+        await blogCollection.deleteMany()
         await postCollection.deleteMany()
     })
 
@@ -13,61 +14,42 @@ describe('/posts', () => {
         await client.close()
     })
 
-
+// --------------------------------------------------------------------------------------------- //
 
     it('should created a Post', async () => {
-        await req.post(SETTINGS.PATH.BLOGS)
-            .send(mockBlog)
-            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.PATH.ADMIN)})
-            .expect(201)
-        const resBlog = await req.get(SETTINGS.PATH.BLOGS)
-        const newPost: PostDBType = {
-            blogId: resBlog.body.items[0].id,
-            content: 'c1',
-            title: 't1',
-            shortDescription: 'sd1'
-        }
+        const {newPost, postData} = await testCreateBlogAndPost(1)
 
-
-
-        const res = await req
-            .post(SETTINGS.PATH.POSTS)
-            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.PATH.ADMIN)})
-            .send(newPost)
-            .expect(201)
-
-        expect(res.body.title).toEqual(newPost.title)
-        expect(res.body.shortDescription).toEqual(newPost.shortDescription)
-        expect(res.body.content).toEqual(newPost.content)
-        expect(typeof res.body.id).toEqual('string')
-        expect(typeof res.body).toEqual('object')
+        expect(newPost.body.title).toEqual(postData.title)
+        expect(newPost.body.shortDescription).toEqual(postData.shortDescription)
+        expect(newPost.body.content).toEqual(postData.content)
+        expect(typeof newPost.body.id).toEqual('string')
+        expect(typeof newPost.body).toEqual('object')
     });
+
+// --------------------------------------------------------------------------------------------- //
 
     it('should created a Post with params', async () => {
-        const resBlog = await req.post(SETTINGS.PATH.BLOGS)
-            .send(mockBlog)
-            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.PATH.ADMIN)})
-            .expect(201)
-        const findBlogId = await req.get(SETTINGS.PATH.BLOGS + '/' + resBlog.body.id)
-        const newPost: Omit<PostDBType, 'blogId'> = {
-            content: 'c1',
-            title: 't1',
-            shortDescription: 'sd1'
-        }
+        const {newBlog} = await testCreateBlogAndPost(2)
+        const newPostData = mockPost(3, newBlog.body.id)
 
-
-        const res = await req
-            .post(SETTINGS.PATH.POSTS)
-            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.PATH.ADMIN)})
-            .send({...newPost, blogId: findBlogId.body.id})
+        const newPost = await req
+            .post(`${SETTINGS.PATH.BLOGS}` + '/' + `${newBlog.body.id}` + '/posts')
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
+            .send({
+                title: newPostData.title,
+                shortDescription: newPostData.shortDescription,
+                content: newPostData.content,
+            })
             .expect(201)
 
-        expect(res.body.title).toEqual(newPost.title)
-        expect(res.body.shortDescription).toEqual(newPost.shortDescription)
-        expect(res.body.content).toEqual(newPost.content)
-        expect(typeof res.body.id).toEqual('string')
-        expect(typeof res.body).toEqual('object')
+        expect(newPost.body.title).toEqual(newPostData.title)
+        expect(newPost.body.shortDescription).toEqual(newPostData.shortDescription)
+        expect(newPost.body.content).toEqual(newPostData.content)
+        expect(typeof newPost.body.id).toEqual('string')
+        expect(typeof newPost.body).toEqual('object')
     });
+
+// --------------------------------------------------------------------------------------------- //
 
     it('should return all posts', async () => {
         const res = await req.get(SETTINGS.PATH.BLOGS)
@@ -75,29 +57,43 @@ describe('/posts', () => {
         expect(res.body.items.length).toBeGreaterThan(0)
     })
 
+// --------------------------------------------------------------------------------------------- //
+
+    it('should update one post', async () => {
+        const {newBlog, newPost} = await testCreateBlogAndPost(3)
+
+        const updatePost: PostDBType = mockPost(4, newBlog.body.id)
+        const updatedPost = await req
+            .put(`${SETTINGS.PATH.POSTS}` + '/' + `${newPost.body.id}`)
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
+            .send(updatePost)
+            .expect(204)
+        expect(typeof updatedPost.body).toEqual('object')
+        expect(updatedPost.status).toBe(204)
+    })
+
+// --------------------------------------------------------------------------------------------- //
+
+    it('should remove one post', async () => {
+        const {newPost} = await testCreateBlogAndPost(5)
+
+        const resRemovePost = await req
+            .delete(`${SETTINGS.PATH.POSTS}` + '/' + `${newPost.body.id}`)
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
+            .expect(204)
+        expect(resRemovePost.status).toBe(204)
+    })
+
+// --------------------------------------------------------------------------------------------- //
+
+    it('should return one post by id', async () => {
+        const {newPost} = await testCreateBlogAndPost(6)
+
+        const getPostById = await req
+            .get(`${SETTINGS.PATH.POSTS}` + '/' + `${newPost.body.id}`)
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
+            .expect(200)
+        expect(getPostById.status).toBe(200)
+    })
+
 })
-
-
-// it('should get empty array', async () => {
-//     // setDB() // очистка базы данных если нужно
-//
-//     const res = await req
-//         .get(SETTINGS.PATH.BLOGS)
-//         .expect(200) // проверяем наличие эндпоинта
-//
-//     console.log(res.body) // можно посмотреть ответ эндпоинта
-//
-//     // expect(res.body.length).toBe(0) // проверяем ответ эндпоинта
-// })
-// it('should get not empty array', async () => {
-//     // setDB(dataset1) // заполнение базы данных начальными данными если нужно
-//
-//     const res = await req
-//         .get(SETTINGS.PATH.BLOGS)
-//         .expect(200)
-//
-//     console.log(res.body)
-//
-//     // expect(res.body.length).toBe(1)
-//     // expect(res.body[0]).toEqual(dataset1.videos[0])
-// })

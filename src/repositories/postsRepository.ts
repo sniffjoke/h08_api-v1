@@ -1,6 +1,5 @@
 import {postCollection} from "../db/mongo-db";
 import {DeleteResult, ObjectId, UpdateResult, WithId} from "mongodb";
-import {postsQueryRepository} from "../queryRepositories/postsQueryRepository";
 import {PostDBType} from "../dtos/posts.dto";
 import {Post} from "../types/posts.interface";
 
@@ -23,6 +22,7 @@ export const postsRepository = {
         const post = {
             title: postData.title,
             shortDescription: postData.shortDescription,
+            content: postData.content,
             blogId: postData.blogId,
             createdAt: new Date(Date.now()).toISOString()
         }

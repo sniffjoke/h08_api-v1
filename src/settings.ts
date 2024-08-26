@@ -14,7 +14,7 @@ export const SETTINGS = {
         MONGODB: process.env.MONGO_URI
     },
     VARIABLES: {
-        DB_NAME: 'bd_8',
+        DB_NAME: 'test',
         BLOG_COLLECTION_NAME: 'blogs',
         POST_COLLECTION_NAME: 'posts',
         USER_COLLECTION_NAME: 'users',
