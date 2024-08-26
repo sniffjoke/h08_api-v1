@@ -50,13 +50,6 @@ export const authService = {
         return isExists
     },
 
-    // async isActivateEmailByStatus(confirmationCode: string) {
-    //     const isActivate = await authRepository.checkActivateEmailByStatus(confirmationCode)
-    //     if (!isActivate) {
-    //         throw ApiError.BadRequest('Юзер уже активирован', 'code')
-    //     }
-    // },
-
     async isActivateEmailByStatus(email: string) {
         const isActivate = await usersRepository.getUserByEmail(email)
         if (isActivate?.emailConfirmation.isConfirmed) {
@@ -67,7 +60,6 @@ export const authService = {
 
     async userUpdateWithEmailConfirmation(email: string, confirmationCode: EmailConfirmationModel) {
         const user = await authRepository.updateUserWithResendActivateEmail(email, confirmationCode)
-        //
         return user
     },
 

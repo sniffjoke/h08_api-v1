@@ -35,7 +35,7 @@ export const registerController = async (req: Request, res: Response, next: Next
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/registration-confirmation/?code=${activationLink}`)
         res.status(204).send('Письмо с активацией отправлено')
     } catch (e) {
-        next(e)
+        return next(e)
     }
 }
 
@@ -55,33 +55,13 @@ export const loginController = async (req: Request, res: Response, next: NextFun
         res.status(200).json({accessToken})
     } catch
         (e) {
-        next(e)
+        return next(e)
     }
 }
 
 export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
-    // try {
-    //     // const token = req.headers.cookie?.split('=')[1] as string
-    //     const token = req.headers.authorization as string
-    //     if (!token) {
-    //         next(ApiError.AnyUnauthorizedError(req.headers))
-    //     }
-    //     const decodedToken: any = jwt.decode(token.split(' ')[1])
-    //     console.log(decodedToken)
-    //     const userCorresponds = await authService.checkUserExistsForToken(decodedToken?._id)
-    //     const user = await usersQueryRepository.userOutput(userCorresponds._id.toString())
-    //     res.status(200).json({
-    //         userId: user.id,
-    //         email: user.email,
-    //         login: user.login,
-    //     })
-    // } catch (e) {
-    //     next(e)
-    // }
-    //-------------------------------------------------------------------------//
     try {
         let token = req.headers.authorization as string
-        // const token = req.cookies['Authorization'] || (req.header('Authorization') ? req.header('Authorization').split('Bearer ')[1] : null)
         if (!token) {
             return next(ApiError.UnauthorizedError())
         }
@@ -89,10 +69,6 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
         if (tokenSplit === null || !token) {
             return next(ApiError.AnyUnauthorizedError('no token'))
         }
-        // let decodedToken:any = jwt.decode(tokenSplit)
-        // if (!decodedToken) {
-        //     return next(ApiError.AnyUnauthorizedError(tokenSplit))
-        // }
         let verifyToken: any = tokenService.validateRefreshToken(tokenSplit)
         if (!verifyToken) {
             return next(ApiError.AnyUnauthorizedError(`${token} - token`))
@@ -107,27 +83,8 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
             login: user.login,
         })
     } catch (e) {
-        console.log(e)
-        next(ApiError.AnyUnauthorizedError('catch'))
+        return next(e)
     }
-    // try {
-    //     const token = tokenService.getToken(req.headers.authorization)
-    //     if (token === undefined) {
-    //         res.status(401).send('Нет авторизации')
-    //         return
-    //     }
-    //
-    //     const decodedToken: any = jwt.decode(token)
-    //     const user = await userCollection.findOne({_id: new ObjectId(decodedToken._id)})
-    //     res.status(200).json({
-    //         userId: user?._id,
-    //         email: user?.email,
-    //         login: user?.login,
-    //     })
-    //
-    // } catch (e) {
-    //     res.status(500).send(e)
-    // }
 }
 
 export const activateEmailUserController = async (req: Request, res: Response, next: NextFunction) => {
@@ -137,7 +94,7 @@ export const activateEmailUserController = async (req: Request, res: Response, n
         await authService.toActivate(confirmationCode)
         res.status(204).send('Email подтвержден')
     } catch (e) {
-        next(e)
+        return next(e)
     }
 }
 
@@ -161,7 +118,7 @@ export const resendEmailController = async (req: Request, res: Response, next: N
         await authService.userUpdateWithEmailConfirmation(email, emailConfirmation)
         res.status(204).send('Ссылка повторна отправлена')
     } catch (e) {
-        next(e)
+        return next(e)
     }
 }
 
@@ -170,15 +127,11 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
         const token = Object.values(req.cookies)[0]
         const newTokenData = await tokenService.refreshToken(token)
         const {tokens, userId} = newTokenData
-        await tokenCollection.insertOne({
-            userId,
-            refreshToken: tokens.refreshToken,
-            blackList: false
-        } as WithId<RTokenDB>)
+        await tokenService.addTokenToDb(userId, tokens.refreshToken)
         res.cookie('refreshToken', tokens.refreshToken, {httpOnly: true, secure: true})
         res.status(200).json({accessToken: tokens.refreshToken})
     } catch (e) {
-        next(e)
+        return next(e)
     }
 }
 
@@ -189,18 +142,17 @@ export const removeRefreshTokenController = async (req: Request, res: Response, 
         const token = req.cookies.refreshToken as string
         const tokenVerified = tokenService.validateRefreshToken(token)
         if (!tokenVerified) {
-            return next(ApiError.AnyUnauthorizedError(token))
+            return next(ApiError.UnauthorizedError())
         }
         const tokenFromDb = await tokenCollection.findOne({refreshToken: token as string})
         if (!tokenFromDb || tokenFromDb.blackList) {
             return next(ApiError.UnauthorizedError())
-        } else {
-            await tokenCollection.updateOne({refreshToken: tokenFromDb?.refreshToken}, {$set: {blackList: true}})
-            res.clearCookie('refreshToken')
-            res.status(204).send('Logout')
         }
+        await tokenService.updateTokenInDb(tokenFromDb.refreshToken)
+        res.clearCookie('refreshToken')
+        res.status(204).send('Logout')
     } catch (e) {
-        next(e)
+        return next(e)
     }
 
 }
