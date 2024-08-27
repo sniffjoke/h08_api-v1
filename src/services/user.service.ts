@@ -4,7 +4,7 @@ import {usersRepository} from "../repositories/usersRepository";
 
 export const userService = {
 
-    async userExists(login: string, email: string) {
+    async isExistOrThrow(login: string, email: string) {
         const emailExists = await usersRepository.getUserByEmail(email)
         const loginExists = await usersRepository.getUserByLogin(login)
         if (emailExists) {

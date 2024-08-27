@@ -15,6 +15,8 @@ describe('posts', () => {
     })
 
 // --------------------------------------------------------------------------------------------- //
+// -------------------------------api/blogs--------------------------------------- //
+// --------------------------------------------------------------------------------------------- //
 
     it('should created a Post', async () => {
         const {newPost, postData} = await testCreateBlogAndPost(1)
@@ -28,9 +30,9 @@ describe('posts', () => {
 
 // --------------------------------------------------------------------------------------------- //
 
-    it('should created a Post with params', async () => {
+    it('should created a Post with Params', async () => {
         const {newBlog} = await testCreateBlogAndPost(2)
-        const newPostData = mockPost(3, newBlog.body.id)
+        const newPostData = mockPost(2, newBlog.body.id)
 
         const newPost = await req
             .post(`${SETTINGS.PATH.BLOGS}` + '/' + `${newBlog.body.id}` + '/posts')
@@ -51,7 +53,7 @@ describe('posts', () => {
 
 // --------------------------------------------------------------------------------------------- //
 
-    it('should return all posts', async () => {
+    it('should return all Posts', async () => {
         const res = await req.get(SETTINGS.PATH.BLOGS)
         expect(res.status).toBe(200)
         expect(res.body.items.length).toBeGreaterThan(0)
@@ -59,7 +61,7 @@ describe('posts', () => {
 
 // --------------------------------------------------------------------------------------------- //
 
-    it('should update one post', async () => {
+    it('should update one Post', async () => {
         const {newBlog, newPost} = await testCreateBlogAndPost(3)
 
         const updatePost: PostDBType = mockPost(4, newBlog.body.id)
@@ -74,7 +76,7 @@ describe('posts', () => {
 
 // --------------------------------------------------------------------------------------------- //
 
-    it('should remove one post', async () => {
+    it('should remove one Post', async () => {
         const {newPost} = await testCreateBlogAndPost(5)
 
         const resRemovePost = await req
@@ -86,14 +88,35 @@ describe('posts', () => {
 
 // --------------------------------------------------------------------------------------------- //
 
-    it('should return one post by id', async () => {
+    it('should return one Post by id', async () => {
         const {newPost} = await testCreateBlogAndPost(6)
 
         const getPostById = await req
             .get(`${SETTINGS.PATH.POSTS}` + '/' + `${newPost.body.id}`)
-            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
             .expect(200)
         expect(getPostById.status).toBe(200)
     })
+
+// --------------------------------------------------------------------------------------------- //
+// -------------------------------api/blogs/{blogId}/posts--------------------------------------- //
+// --------------------------------------------------------------------------------------------- //
+
+    it('should return all Posts by blogId', async () => {
+        const {newBlog} = await testCreateBlogAndPost(7)
+        const getPosts = await req
+            .get(`${SETTINGS.PATH.BLOGS}` + '/' + `${newBlog.body.id}` + '/' + 'posts')
+            .expect(200)
+    });
+
+// --------------------------------------------------------------------------------------------- //
+
+    it('should create Post by blogId in Params', async () => {
+        const {newBlog} = await testCreateBlogAndPost(8)
+        const createPost = await req
+            .post(`${SETTINGS.PATH.BLOGS}` + '/' + `${newBlog.body.id}` + '/' + 'posts')
+            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
+            .send(mockPost(9, newBlog.body.id))
+            .expect(201)
+    });
 
 })

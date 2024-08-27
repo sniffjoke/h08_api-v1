@@ -17,7 +17,7 @@ import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
 export const registerController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {login, email, password} = req.body
-        await userService.userExists(login, email)
+        await userService.isExistOrThrow(login, email)
         const hashPassword = await bcrypt.hash(password, 3)
         const activationLink = uuid()
         const emailConfirmation: EmailConfirmationModel = {

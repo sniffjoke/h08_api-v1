@@ -10,19 +10,12 @@ export const postsRepository = {
         return await postCollection.findOne({_id: id})
     },
 
-    // async getAllPosts(query: any) {
-    //     const posts = await postsQueryRepository.postsSortWithQuery(query)
-    //     return {
-    //         ...query,
-    //         items: posts.map((post: any) => postsQueryRepository.postMapOutput(post))
-    //     }
-    // },
-
-    async createPost(postData: PostDBType): Promise<ObjectId> {
+    async createPost(postData: Post): Promise<ObjectId> {
         const post = {
             title: postData.title,
             shortDescription: postData.shortDescription,
             content: postData.content,
+            blogName: postData.blogName,
             blogId: postData.blogId,
             createdAt: new Date(Date.now()).toISOString()
         }
@@ -45,14 +38,6 @@ export const postsRepository = {
 
     async postDelete(postId: ObjectId): Promise<DeleteResult> {
         return await postCollection.deleteOne({_id: postId})
-    },
-
-    // async findAllPostsByBlogId(blogId: string, query: any) {
-    //     const posts = await postsQueryRepository.getAllPostsByBlogIdSortWithQuery(blogId, query)
-    //     return {
-    //         ...query,
-    //         items: posts.map((post: any) => postsQueryRepository.postMapOutput(post))
-    //     }
-    // }
+    }
 
 }

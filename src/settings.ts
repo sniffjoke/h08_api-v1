@@ -11,6 +11,7 @@ export const SETTINGS = {
         TESTING: '/api/testing/all-data',
         USERS: '/api/users',
         AUTH: '/api/auth',
+        LOGIN: '/api/auth/login',
         MONGODB: process.env.MONGO_URI
     },
     VARIABLES: {

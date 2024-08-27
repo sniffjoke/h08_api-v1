@@ -1,7 +1,6 @@
-import {codeAuth, mockUser, req} from './test-helpers'
+import {codeAuth,  req, testCreateUser} from './test-helpers'
 import {SETTINGS} from '../src/settings'
 import {client, connectToDB, userCollection} from "../src/db/mongo-db";
-import {UserDBType} from "../src/dtos/users.dto";
 
 describe('users', () => {
     beforeAll(async () => { // очистка базы данных перед началом тестирования
@@ -16,13 +15,8 @@ describe('users', () => {
 // --------------------------------------------------------------------------------------------- //
 
     it('should created User', async () => {
-        const userData: UserDBType = mockUser(1)
+        const {newUser, userData} = await testCreateUser(1)
 
-        const newUser = await req
-            .post(SETTINGS.PATH.USERS)
-            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
-            .send(userData)
-            .expect(201)
         expect(newUser.body.login).toEqual(userData.login)
         expect(newUser.body.email).toEqual(userData.email)
         expect(typeof newUser.body.id).toEqual('string')
@@ -40,14 +34,7 @@ describe('users', () => {
 // --------------------------------------------------------------------------------------------- //
 
     it('should remove one user by params id', async () => {
-        const userData: UserDBType = mockUser(2)
-
-        const newUser = await req
-            .post(SETTINGS.PATH.USERS)
-            .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
-            .send(userData)
-            .expect(201)
-
+        const {newUser} = await testCreateUser(2)
 
         const removeUser = await req
             .delete(`${SETTINGS.PATH.USERS}` + '/' + `${newUser.body.id}`)

@@ -41,7 +41,7 @@ export const getPostByIdController = async (req: Request, res: Response) => {
 export const createPostController = async (req: Request, res: Response) => {
     try {
         const blog = await blogsRepository.findBlogById(req.body.blogId)
-        const newPostId = await postsRepository.createPost({...req.body, blogName: blog?.name})
+        const newPostId = await postsRepository.createPost({...req.body, blogName: blog!.name})
         const newPost = await postsQueryRepository.postOutput(newPostId.toString())
         res.status(201).json(newPost)
     } catch (e) {

@@ -28,7 +28,7 @@ export const getUsersController = async (req: Request<any, any, any, any>, res: 
 export const createUserController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {login, email, password} = req.body
-        await userService.userExists(email, login)
+        await userService.isExistOrThrow(email, login)
         const emailConfirmation: EmailConfirmationModel = {
             isConfirmed: true
         }

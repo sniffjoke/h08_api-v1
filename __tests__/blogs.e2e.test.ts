@@ -20,7 +20,6 @@ describe('blogs', () => {
         const res = await req
             .post(SETTINGS.PATH.BLOGS)
             .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
-            // .set({'Authorization': `Bearer ` + codeAuth(SETTINGS.PATH.ADMIN)})
             .send(newBlog)
             .expect(201)
         expect(res.body.name).toEqual(newBlog.name)
