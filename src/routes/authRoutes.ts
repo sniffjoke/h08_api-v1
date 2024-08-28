@@ -3,7 +3,7 @@ import {
     activateEmailUserController,
     getMeController,
     loginController, refreshTokenController,
-    registerController, removeRefreshTokenController, resendEmailController
+    registerController, logoutController, resendEmailController
 } from "../controllers/authController";
 import {errorMiddleware} from "../middlewares/errorMiddleware";
 import {
@@ -11,7 +11,6 @@ import {
     loginAuthRegisterValidator,
     passwordAuthRegisterValidator
 } from "../middlewares/authValidators";
-import {authMiddlewareWithBearer} from "../middlewares/authMiddlewareWithBearer";
 
 
 const router = express.Router();
@@ -57,7 +56,7 @@ router.route('/refresh-token')
 
 router.route('/logout')
     .post(
-        removeRefreshTokenController
+        logoutController
     )
 
 export default router

@@ -35,4 +35,4 @@ class MailService {
     }
 }
 
-export default MailService
+export default new MailService();

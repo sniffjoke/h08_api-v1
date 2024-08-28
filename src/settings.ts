@@ -12,6 +12,7 @@ export const SETTINGS = {
         USERS: '/api/users',
         AUTH: '/api/auth',
         LOGIN: '/api/auth/login',
+        API_URL: process.env.API_URL,
         MONGODB: process.env.MONGO_URI
     },
     VARIABLES: {

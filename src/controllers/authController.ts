@@ -1,38 +1,19 @@
 import {NextFunction, Request, Response} from 'express';
 import {tokenService} from "../services/token.service";
 import {userService} from "../services/user.service";
-import * as bcrypt from 'bcrypt';
-import {EmailConfirmationModel, usersRepository} from "../repositories/usersRepository";
+import {EmailConfirmationModel} from "../repositories/usersRepository";
 import {v4 as uuid} from 'uuid'
-import MailService from "../services/mail.service";
 import {add} from 'date-fns'
 import {authService} from "../services/auth.service";
-import {tokenCollection} from "../db/mongo-db";
-import {WithId} from "mongodb";
-import {RTokenDB} from "../types/tokens.interface";
 import {ApiError} from "../exceptions/api.error";
 import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
+import mailService from "../services/mail.service";
 
 
 export const registerController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {login, email, password} = req.body
-        await userService.isExistOrThrow(login, email)
-        const hashPassword = await bcrypt.hash(password, 3)
-        const activationLink = uuid()
-        const emailConfirmation: EmailConfirmationModel = {
-            isConfirmed: false,
-            confirmationCode: activationLink,
-            expirationDate: add(new Date(), {
-                    hours: 1,
-                    minutes: 30,
-                }
-            ).toString()
-        }
-
-        await usersRepository.createUser({email, password: hashPassword, login}, emailConfirmation)
-        const mailService = new MailService()
-        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/registration-confirmation/?code=${activationLink}`)
+        await userService.registerUser({login, email, password})
         res.status(204).send('Письмо с активацией отправлено')
     } catch (e) {
         return next(e)
@@ -42,19 +23,10 @@ export const registerController = async (req: Request, res: Response, next: Next
 export const loginController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {loginOrEmail, password} = req.body;
-        const user = await authService.validateUser(loginOrEmail)
-        await authService.isPasswordCorrect(password, user.password)
-        const token = tokenService.createTokens(user._id.toString())
-        const {accessToken, refreshToken} = token
-        await tokenCollection.insertOne({
-            userId: user._id.toString(),
-            refreshToken,
-            blackList: false
-        } as WithId<RTokenDB>)
+        const {accessToken, refreshToken} = await authService.loginUser({loginOrEmail, password})
         res.cookie('refreshToken', refreshToken.split(';')[0], {httpOnly: true, secure: true})
         res.status(200).json({accessToken})
-    } catch
-        (e) {
+    } catch (e) {
         return next(e)
     }
 }
@@ -67,15 +39,15 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
         }
         let tokenSplit = token.split(' ')[1]
         if (tokenSplit === null || !token) {
-            return next(ApiError.AnyUnauthorizedError('no token'))
+            return next(ApiError.UnauthorizedError())
         }
         let verifyToken: any = tokenService.validateRefreshToken(tokenSplit)
         if (!verifyToken) {
-            return next(ApiError.AnyUnauthorizedError(`${token} - token`))
+            return next(ApiError.UnauthorizedError())
         }
         const user = await usersQueryRepository.userOutput(verifyToken?._id)
         if (!user) {
-            return next(ApiError.AnyUnauthorizedError('no user'))
+            return next(ApiError.UnauthorizedError())
         }
         res.status(200).json({
             userId: user.id,
@@ -113,7 +85,6 @@ export const resendEmailController = async (req: Request, res: Response, next: N
                 }
             ).toString()
         }
-        const mailService = new MailService()
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/registration-confirmation/?code=${activationLink}`)
         await authService.userUpdateWithEmailConfirmation(email, emailConfirmation)
         res.status(204).send('Ссылка повторна отправлена')
@@ -124,36 +95,24 @@ export const resendEmailController = async (req: Request, res: Response, next: N
 
 export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = Object.values(req.cookies)[0]
-        const newTokenData = await tokenService.refreshToken(token)
-        const {tokens, userId} = newTokenData
-        await tokenService.addTokenToDb(userId, tokens.refreshToken)
-        res.cookie('refreshToken', tokens.refreshToken, {httpOnly: true, secure: true})
-        res.status(200).json({accessToken: tokens.refreshToken})
+        const {refreshToken, accessToken} = await authService.refreshToken(Object.values(req.cookies)[0])
+        res.cookie('refreshToken', refreshToken, {httpOnly: true, secure: true})
+        res.status(200).json({accessToken})
     } catch (e) {
         return next(e)
     }
 }
 
-export const removeRefreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
+export const logoutController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // const token = req.headers.cookie?.split('=')[1] as string
-        // const token = Object.values(req.cookies)[0]
-        const token = req.cookies.refreshToken as string
-        const tokenVerified = tokenService.validateRefreshToken(token)
-        if (!tokenVerified) {
-            return next(ApiError.UnauthorizedError())
-        }
-        const tokenFromDb = await tokenCollection.findOne({refreshToken: token as string})
-        if (!tokenFromDb || tokenFromDb.blackList) {
-            return next(ApiError.UnauthorizedError())
-        }
-        await tokenService.updateTokenInDb(tokenFromDb.refreshToken)
+        await authService.logoutUser(req.cookies.refreshToken as string)
         res.clearCookie('refreshToken')
         res.status(204).send('Logout')
     } catch (e) {
         return next(e)
     }
-
 }
+
+// const token = req.headers.cookie?.split('=')[1] as string
+// const token = Object.values(req.cookies)[0]
 
