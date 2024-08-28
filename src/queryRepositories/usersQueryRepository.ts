@@ -25,6 +25,7 @@ export const usersQueryRepository = {
     },
 
     async userOutput(id: string) {
+        // console.log()
         const user = await userCollection.findOne({_id: new ObjectId(id)})
         return this.userMapOutput(user as WithId<User>)
     },

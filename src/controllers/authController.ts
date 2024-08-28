@@ -1,12 +1,9 @@
 import {NextFunction, Request, Response} from 'express';
-import {tokenService} from "../services/token.service";
 import {userService} from "../services/user.service";
 import {EmailConfirmationModel} from "../repositories/usersRepository";
 import {v4 as uuid} from 'uuid'
 import {add} from 'date-fns'
 import {authService} from "../services/auth.service";
-import {ApiError} from "../exceptions/api.error";
-import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
 import mailService from "../services/mail.service";
 
 
@@ -33,22 +30,7 @@ export const loginController = async (req: Request, res: Response, next: NextFun
 
 export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let token = req.headers.authorization as string
-        if (!token) {
-            return next(ApiError.UnauthorizedError())
-        }
-        let tokenSplit = token.split(' ')[1]
-        if (tokenSplit === null || !token) {
-            return next(ApiError.UnauthorizedError())
-        }
-        let verifyToken: any = tokenService.validateAccessToken(tokenSplit)
-        if (!verifyToken) {
-            return next(ApiError.UnauthorizedError())
-        }
-        const user = await usersQueryRepository.userOutput(verifyToken?._id)
-        if (!user) {
-            return next(ApiError.UnauthorizedError())
-        }
+        const user = await authService.getMe(req.headers.authorization?.split(' ')[1] as string)
         res.status(200).json({
             userId: user.id,
             email: user.email,

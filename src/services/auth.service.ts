@@ -6,6 +6,7 @@ import {LoginUserDto} from "../dtos/login.dto";
 import {tokenService} from "./token.service";
 import {tokensRepository} from "../repositories/tokensRepository";
 import {RTokenDB} from "../types/tokens.interface";
+import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
 
 
 export const authService = {
@@ -60,6 +61,15 @@ export const authService = {
             accessToken
         }
 
+    },
+
+    async getMe(token: string) {
+        const tokenData: any = tokenService.decodeToken(token)
+        const user = await usersQueryRepository.userOutput(tokenData._id)
+        if (!user) {
+            throw ApiError.UnauthorizedError()
+        }
+        return user
     },
 
     async logoutUser(token: string) {

@@ -36,6 +36,14 @@ export const tokenService = {
         return token
     },
 
+    decodeToken(token: string) {
+        const decodedToken = jwt.decode(token)
+        if (!token) {
+            throw ApiError.UnauthorizedError()
+        }
+        return decodedToken
+    },
+
     async refreshToken(refreshToken: string) {
         const tokenData: any = this.validateRefreshToken(refreshToken)
          if (!tokenData) {
