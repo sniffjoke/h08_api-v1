@@ -14,7 +14,7 @@ export const userService = {
     async createUser(userData: UserDBType, confirmStatus: boolean) {
         const {login, email, password} = userData
         const activationLink = uuid()
-        const emailConfirmation = this.createEmailInformationInfo(confirmStatus, activationLink)
+        const emailConfirmation = this.createEmailConfirmationInfo(confirmStatus, activationLink)
         await this.isExistOrThrow(login, email)
         const hashPassword = await cryptoService.hashPassword(password)
         const userId = await usersRepository.createUser({email, password: hashPassword, login}, emailConfirmation)
@@ -37,7 +37,7 @@ export const userService = {
         return null
     },
 
-    createEmailInformationInfo(isConfirm: boolean, activationLink: string) {
+    createEmailConfirmationInfo(isConfirm: boolean, activationLink: string) {
         const emailConfirmationNotConfirm: EmailConfirmationModel = {
             isConfirmed: false,
             confirmationCode: activationLink,

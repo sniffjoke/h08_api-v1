@@ -1,6 +1,7 @@
 import {NextFunction, Request, Response} from 'express';
 import {userService} from "../services/user.service";
 import {authService} from "../services/auth.service";
+import {tokenService} from "../services/token.service";
 
 
 export const registerController = async (req: Request, res: Response, next: NextFunction) => {
@@ -26,7 +27,7 @@ export const loginController = async (req: Request, res: Response, next: NextFun
 
 export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const user = await authService.getMe(req.headers.authorization?.split(' ')[1] as string)
+        const user = await authService.getMe(tokenService.getToken(req.headers.authorization))
         res.status(200).json({
             userId: user.id,
             email: user.email,

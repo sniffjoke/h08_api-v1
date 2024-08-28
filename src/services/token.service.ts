@@ -1,9 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import {SETTINGS} from "../settings";
 import {ApiError} from "../exceptions/api.error";
-import {tokenCollection} from "../db/mongo-db";
-import {WithId} from "mongodb";
-import {RTokenDB} from "../types/tokens.interface";
 
 
 
@@ -44,42 +41,22 @@ export const tokenService = {
         return decodedToken
     },
 
-    async refreshToken(refreshToken: string) {
-        const tokenData: any = this.validateRefreshToken(refreshToken)
-         if (!tokenData) {
-            throw ApiError.AnyUnauthorizedError(refreshToken)
-        }
-        const token = await tokenCollection.findOne({refreshToken})
-        if (!token || token.blackList) {
-            throw ApiError.UnauthorizedError()
-        }
-        await tokenCollection.updateOne({_id: token._id}, {$set: {blackList: true}})
-        const tokens = this.createTokens(token.userId)
-        return {
-            tokens,
-            userId: token.userId
-        }
-    },
-
-    async addTokenToDb(userId: string, refreshToken: string) {
-        const token = await tokenCollection.insertOne({
-            userId,
-            refreshToken,
-            blackList: false
-        } as WithId<RTokenDB>)
-        if (!token) {
-            throw ApiError.UnauthorizedError()
-        }
-        return token
-    },
-
-    async updateTokenInDb(refreshToken: string) {
-        const updatedToken = await tokenCollection.updateOne({refreshToken}, {$set: {blackList: true}})
-        if (!updatedToken) {
-            throw ApiError.UnauthorizedError()
-        }
-        return updatedToken
-    },
+    // async refreshToken(refreshToken: string) {
+    //     const tokenData: any = this.validateRefreshToken(refreshToken)
+    //      if (!tokenData) {
+    //         throw ApiError.AnyUnauthorizedError(refreshToken)
+    //     }
+    //     const token = await tokenCollection.findOne({refreshToken})
+    //     if (!token || token.blackList) {
+    //         throw ApiError.UnauthorizedError()
+    //     }
+    //     await tokenCollection.updateOne({_id: token._id}, {$set: {blackList: true}})
+    //     const tokens = this.createTokens(token.userId)
+    //     return {
+    //         tokens,
+    //         userId: token.userId
+    //     }
+    // },
 
     validateAccessToken(token: string) {
         try {

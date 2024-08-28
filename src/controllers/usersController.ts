@@ -25,15 +25,6 @@ export const getUsersController = async (req: Request<any, any, any, any>, res: 
 
 export const createUserController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // const {login, email, password} = req.body
-        // await userService.isExistOrThrow(email, login)
-        // const emailConfirmation: EmailConfirmationModel = {
-        //     isConfirmed: true
-        // }
-        // const hashPassword = await bcrypt.hash(password, 3)
-        // const userData: UserDBType = {login, email, password: hashPassword}
-        // const newUserId = await usersRepository.createUser(userData, emailConfirmation)
-        // const newUser = await usersQueryRepository.userOutput(newUserId.toString())
         const {login, email, password} = req.body
         const newUser = await userService.createUser({login, email, password}, true)
         res.status(201).json(newUser)
@@ -51,9 +42,3 @@ export const deleteUserByIdController = async (req: Request, res: Response) => {
         res.status(500).send(e)
     }
 }
-
-// export const getUserByIdController = async (req: Request, res: Response) => {
-//     const id = req.params.id
-//     const user = await usersQueryRepository.userOutput(id)
-//     res.status(200).json(user)
-// }

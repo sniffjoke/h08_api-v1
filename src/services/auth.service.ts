@@ -1,6 +1,5 @@
 import {ApiError} from "../exceptions/api.error";
-import {EmailConfirmationModel, usersRepository} from "../repositories/usersRepository";
-import * as bcrypt from "bcrypt";
+import {usersRepository} from "../repositories/usersRepository";
 import {authRepository} from "../repositories/authRepository";
 import {LoginUserDto} from "../dtos/login.dto";
 import {tokenService} from "./token.service";
@@ -8,8 +7,9 @@ import {tokensRepository} from "../repositories/tokensRepository";
 import {RTokenDB} from "../types/tokens.interface";
 import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
 import {v4 as uuid} from "uuid";
-import {add} from "date-fns";
 import mailService from "./mail.service";
+import {userService} from "./user.service";
+import {cryptoService} from "./crypto.service";
 
 
 export const authService = {
@@ -19,7 +19,7 @@ export const authService = {
         if (!user) {
             throw ApiError.UnauthorizedError()
         }
-        const isPasswordCorrect =  await this.isPasswordCorrect(userData.password, user.password)
+        const isPasswordCorrect =  await cryptoService.comparePassword(userData.password, user.password)
         if (!isPasswordCorrect) {
             throw ApiError.UnauthorizedError()
         }
@@ -106,15 +106,7 @@ export const authService = {
     async resendEmail(email: string) {
         await this.isActivateEmailByStatus(email)
         const activationLink = uuid()
-        const emailConfirmation: EmailConfirmationModel = {
-            isConfirmed: false,
-            confirmationCode: activationLink,
-            expirationDate: add(new Date(), {
-                    hours: 1,
-                    minutes: 30,
-                }
-            ).toString()
-        }
+        const emailConfirmation = userService.createEmailConfirmationInfo(false, activationLink)
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/registration-confirmation/?code=${activationLink}`)
         const updateUserInfo = await authRepository.updateUserWithResendActivateEmail(email, emailConfirmation)
         if (!updateUserInfo) {
@@ -134,14 +126,6 @@ export const authService = {
             throw ApiError.BadRequest('Пользователь не найден', 'loginOrEmail')
         }
         return user
-    },
-
-    async isPasswordCorrect(password: string, hashedPassword: string) {
-        const isCorrect =  await bcrypt.compare(password, hashedPassword)
-        if (!isCorrect) {
-            throw ApiError.UnauthorizedError()
-        }
-        return isCorrect
     },
 
     async isActivateEmailByStatus(email: string) {
