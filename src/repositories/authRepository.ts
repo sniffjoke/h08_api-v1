@@ -5,7 +5,8 @@ import {EmailConfirmationModel} from "./usersRepository";
 export const authRepository = {
 
     async updateUserWithResendActivateEmail(email: string, emailConfirmation: EmailConfirmationModel) {
-        return userCollection.updateOne({email}, {$set: {emailConfirmation}});
+        const updateUserInfo = await userCollection.updateOne({email}, {$set: {emailConfirmation}});
+        return updateUserInfo
     },
 
     async checkActivateEmailByCode(confirmationCode: string) {

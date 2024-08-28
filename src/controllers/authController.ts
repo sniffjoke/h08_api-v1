@@ -1,10 +1,6 @@
 import {NextFunction, Request, Response} from 'express';
 import {userService} from "../services/user.service";
-import {EmailConfirmationModel} from "../repositories/usersRepository";
-import {v4 as uuid} from 'uuid'
-import {add} from 'date-fns'
 import {authService} from "../services/auth.service";
-import mailService from "../services/mail.service";
 
 
 export const registerController = async (req: Request, res: Response, next: NextFunction) => {
@@ -43,9 +39,7 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
 
 export const activateEmailUserController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const confirmationCode: string = req.body.code
-        await authService.isActivateEmailByCode(confirmationCode)
-        await authService.toActivate(confirmationCode)
+        await authService.activateEmail(req.body.code)
         res.status(204).send('Email подтвержден')
     } catch (e) {
         return next(e)
@@ -54,21 +48,7 @@ export const activateEmailUserController = async (req: Request, res: Response, n
 
 export const resendEmailController = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const {email} = req.body
-        await authService.validateUserByEmail(email)
-        await authService.isActivateEmailByStatus(email)
-        const activationLink = uuid()
-        const emailConfirmation: EmailConfirmationModel = {
-            isConfirmed: false,
-            confirmationCode: activationLink,
-            expirationDate: add(new Date(), {
-                    hours: 1,
-                    minutes: 30,
-                }
-            ).toString()
-        }
-        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/registration-confirmation/?code=${activationLink}`)
-        await authService.userUpdateWithEmailConfirmation(email, emailConfirmation)
+        await authService.resendEmail(req.body.email)
         res.status(204).send('Ссылка повторна отправлена')
     } catch (e) {
         return next(e)

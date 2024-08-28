@@ -7,6 +7,9 @@ import {tokenService} from "./token.service";
 import {tokensRepository} from "../repositories/tokensRepository";
 import {RTokenDB} from "../types/tokens.interface";
 import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
+import {v4 as uuid} from "uuid";
+import {add} from "date-fns";
+import mailService from "./mail.service";
 
 
 export const authService = {
@@ -88,6 +91,38 @@ export const authService = {
         return updatedToken
     },
 
+    async activateEmail(confirmationCode: string) {
+        const isActivateEmail = await authRepository.checkActivateEmailByCode(confirmationCode)
+        if (!isActivateEmail) {
+            throw ApiError.BadRequest('Юзер уже активирован', 'code')
+        }
+        const updateEmailStatus = await authRepository.toActivateEmail(confirmationCode)
+        if (!updateEmailStatus) {
+            throw ApiError.BadRequest('Юзер не найден', 'code')
+        }
+        return updateEmailStatus
+    },
+
+    async resendEmail(email: string) {
+        await this.isActivateEmailByStatus(email)
+        const activationLink = uuid()
+        const emailConfirmation: EmailConfirmationModel = {
+            isConfirmed: false,
+            confirmationCode: activationLink,
+            expirationDate: add(new Date(), {
+                    hours: 1,
+                    minutes: 30,
+                }
+            ).toString()
+        }
+        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/registration-confirmation/?code=${activationLink}`)
+        const updateUserInfo = await authRepository.updateUserWithResendActivateEmail(email, emailConfirmation)
+        if (!updateUserInfo) {
+            throw ApiError.UnauthorizedError()
+        }
+        return updateUserInfo
+    },
+
     async validateUser(userLoginOrEmail: string) {
         let user
         if (!/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/.test(userLoginOrEmail)) {
@@ -109,48 +144,15 @@ export const authService = {
         return isCorrect
     },
 
-    async isActivateEmailByCode(confirmationCode: string) {
-        const isActivate = await authRepository.checkActivateEmailByCode(confirmationCode)
-        if (!isActivate) {
-            throw ApiError.BadRequest('Юзер уже активирован', 'code')
-        }
-    },
-
-    async toActivate(confirmationCode: string) {
-        const user = await authRepository.toActivateEmail(confirmationCode)
-        if (!user) {
-            throw ApiError.BadRequest('Юзер не найден', 'code')
-        }
-        return user
-    },
-
-    async validateUserByEmail(email: string) {
-        const isExists = await usersRepository.getUserByEmail(email)
-        if (!isExists) {
+    async isActivateEmailByStatus(email: string) {
+        const isActivateEmail = await usersRepository.getUserByEmail(email)
+        if (!isActivateEmail) {
             throw ApiError.BadRequest('Юзер не найден', 'email')
         }
-        return isExists
-    },
-
-    async isActivateEmailByStatus(email: string) {
-        const isActivate = await usersRepository.getUserByEmail(email)
-        if (isActivate?.emailConfirmation.isConfirmed) {
+        if (isActivateEmail.emailConfirmation.isConfirmed) {
             throw ApiError.BadRequest('Юзер уже активирован', 'email')
         }
-        return isActivate
-    },
-
-    async userUpdateWithEmailConfirmation(email: string, confirmationCode: EmailConfirmationModel) {
-        const user = await authRepository.updateUserWithResendActivateEmail(email, confirmationCode)
-        return user
-    },
-
-    async checkUserExistsForToken(id: string) {
-        const user = await usersRepository.findUserById(id)
-        if (!user) {
-            throw ApiError.BadRequest('Токен не валидный', 'token')
-        }
-        return user
+        return isActivateEmail
     }
 
 }
