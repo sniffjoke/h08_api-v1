@@ -1,9 +1,7 @@
 import {NextFunction, Request, Response} from 'express';
-import {EmailConfirmationModel, usersRepository} from "../repositories/usersRepository";
+import {usersRepository} from "../repositories/usersRepository";
 import {usersQueryHelper} from "../helpers/usersHelper";
 import {usersQueryRepository} from "../queryRepositories/usersQueryRepository";
-import {UserDBType} from "../dtos/users.dto";
-import * as bcrypt from "bcrypt";
 import {userService} from "../services/user.service";
 
 
@@ -27,15 +25,17 @@ export const getUsersController = async (req: Request<any, any, any, any>, res: 
 
 export const createUserController = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        // const {login, email, password} = req.body
+        // await userService.isExistOrThrow(email, login)
+        // const emailConfirmation: EmailConfirmationModel = {
+        //     isConfirmed: true
+        // }
+        // const hashPassword = await bcrypt.hash(password, 3)
+        // const userData: UserDBType = {login, email, password: hashPassword}
+        // const newUserId = await usersRepository.createUser(userData, emailConfirmation)
+        // const newUser = await usersQueryRepository.userOutput(newUserId.toString())
         const {login, email, password} = req.body
-        await userService.isExistOrThrow(email, login)
-        const emailConfirmation: EmailConfirmationModel = {
-            isConfirmed: true
-        }
-        const hashPassword = await bcrypt.hash(password, 3)
-        const userData: UserDBType = {login, email, password: hashPassword}
-        const newUserId = await usersRepository.createUser(userData, emailConfirmation)
-        const newUser = await usersQueryRepository.userOutput(newUserId.toString())
+        const newUser = await userService.createUser({login, email, password}, true)
         res.status(201).json(newUser)
     } catch (e) {
         next(e)

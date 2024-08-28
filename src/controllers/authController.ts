@@ -6,7 +6,7 @@ import {authService} from "../services/auth.service";
 export const registerController = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {login, email, password} = req.body
-        await userService.registerUser({login, email, password})
+        await userService.createUser({login, email, password}, false)
         res.status(204).send('Письмо с активацией отправлено')
     } catch (e) {
         return next(e)
