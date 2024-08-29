@@ -10,7 +10,7 @@ export const registerController = async (req: Request, res: Response, next: Next
         await userService.createUser({login, email, password}, false)
         res.status(204).send('Письмо с активацией отправлено')
     } catch (e) {
-        return next(e)
+        next(e)
     }
 }
 
@@ -21,7 +21,7 @@ export const loginController = async (req: Request, res: Response, next: NextFun
         res.cookie('refreshToken', refreshToken.split(';')[0], {httpOnly: true, secure: true})
         res.status(200).json({accessToken})
     } catch (e) {
-        return next(e)
+        next(e)
     }
 }
 
@@ -34,7 +34,7 @@ export const getMeController = async (req: Request, res: Response, next: NextFun
             login: user.login,
         })
     } catch (e) {
-        return next(e)
+        next(e)
     }
 }
 
@@ -43,7 +43,7 @@ export const activateEmailUserController = async (req: Request, res: Response, n
         await authService.activateEmail(req.body.code)
         res.status(204).send('Email подтвержден')
     } catch (e) {
-        return next(e)
+        next(e)
     }
 }
 
@@ -52,7 +52,7 @@ export const resendEmailController = async (req: Request, res: Response, next: N
         await authService.resendEmail(req.body.email)
         res.status(204).send('Ссылка повторна отправлена')
     } catch (e) {
-        return next(e)
+        next(e)
     }
 }
 
@@ -62,7 +62,7 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
         res.cookie('refreshToken', refreshToken, {httpOnly: true, secure: true})
         res.status(200).json({accessToken})
     } catch (e) {
-        return next(e)
+        next(e)
     }
 }
 
@@ -72,7 +72,7 @@ export const logoutController = async (req: Request, res: Response, next: NextFu
         res.clearCookie('refreshToken')
         res.status(204).send('Logout')
     } catch (e) {
-        return next(e)
+        next(e)
     }
 }
 

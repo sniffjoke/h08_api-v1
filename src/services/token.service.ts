@@ -41,23 +41,6 @@ export const tokenService = {
         return decodedToken
     },
 
-    // async refreshToken(refreshToken: string) {
-    //     const tokenData: any = this.validateRefreshToken(refreshToken)
-    //      if (!tokenData) {
-    //         throw ApiError.AnyUnauthorizedError(refreshToken)
-    //     }
-    //     const token = await tokenCollection.findOne({refreshToken})
-    //     if (!token || token.blackList) {
-    //         throw ApiError.UnauthorizedError()
-    //     }
-    //     await tokenCollection.updateOne({_id: token._id}, {$set: {blackList: true}})
-    //     const tokens = this.createTokens(token.userId)
-    //     return {
-    //         tokens,
-    //         userId: token.userId
-    //     }
-    // },
-
     validateAccessToken(token: string) {
         try {
             const userData = jwt.verify(token, SETTINGS.VARIABLES.JWT_SECRET_ACCESS_TOKEN as string)

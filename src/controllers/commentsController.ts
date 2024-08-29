@@ -4,7 +4,6 @@ import {commentsRepository} from "../repositories/commentsRepository";
 import {commentsQueryHelper} from "../helpers/commentsHelper";
 import {commentsQueryRepository} from "../queryRepositories/commentsQueryRepository";
 import {tokenService} from "../services/token.service";
-import {postCollection, userCollection} from "../db/mongo-db";
 
 
 export const getCommentsController = async (req: Request<any, any, any, any>, res: Response) => {
@@ -47,8 +46,7 @@ export const getAllCommentsByPostIdController = async (req: Request<any, any, an
 
 export const getCommentByIdController = async (req: Request, res: Response) => {
     try {
-        const id = req.params.id
-        const comment = await commentsQueryRepository.commentOutput(id)
+        const comment = await commentsQueryRepository.commentOutput(req.params.id)
         res.status(200).json(comment)
     } catch (e) {
         res.status(500).send(e)
@@ -57,26 +55,27 @@ export const getCommentByIdController = async (req: Request, res: Response) => {
 
 export const createCommentByPostIdWithParamsController = async (req: Request, res: Response) => {
     try {
-        const post = await postCollection.findOne({_id: new ObjectId(req.params.id)})
-        const token = tokenService.getToken(req.headers.authorization)
-        if (token === undefined) {
-            res.status(401).send('Нет авторизации')
-            return
-        }
-        const validateToken: any = tokenService.validateAccessToken(token)
-        if (validateToken === null) {
-            res.status(401).send('Нет авторизации')
-            return
-        }
-        const user = await userCollection.findOne({_id: new ObjectId(validateToken._id)})
-        const newCommentId = await commentsRepository.createComment({
-            content: req.body.content,
-            postId: post!._id.toString(),
-            commentatorInfo: {
-                userId: user!._id.toString(),
-                userLogin: user!.login
-            }
-        })
+        // const post = await postCollection.findOne({_id: new ObjectId(req.params.id)})
+        // const token = tokenService.getToken(req.headers.authorization)
+        // if (token === undefined) {
+        //     res.status(401).send('Нет авторизации')
+        //     return
+        // }
+        // const decodedToken: any = tokenService.decodeToken(token)
+        // if (decodedToken === null) {
+        //     res.status(401).send('Нет авторизации')
+        //     return
+        // }
+        // const user = await userCollection.findOne({_id: new ObjectId(decodedToken._id)})
+        // const newCommentId = await commentsRepository.createComment({
+        //     content: req.body.content,
+        //     postId: post!._id.toString(),
+        //     commentatorInfo: {
+        //         userId: user!._id.toString(),
+        //         userLogin: user!.login
+        //     }
+        // })
+        const newCommentId = await commentsRepository.createCommentByPostIdWithParamsController(req.body.content, req.params.id, tokenService.getToken(req.headers.authorization))
         const newComment = await commentsQueryRepository.commentOutput(newCommentId.toString())
         res.status(201).json(newComment)
     } catch (e) {
@@ -86,8 +85,7 @@ export const createCommentByPostIdWithParamsController = async (req: Request, re
 
 export const updateCommentController = async (req: Request, res: Response) => {
     try {
-        const commentId = req.params.id
-        await commentsRepository.updateCommentById(commentId, req.body)
+        await commentsRepository.updateCommentById(req.params.id, req.body)
         res.status(204).send('Обновлено')
     } catch (e) {
         res.status(500).send(e)
@@ -96,8 +94,7 @@ export const updateCommentController = async (req: Request, res: Response) => {
 
 export const deleteCommentController = async (req: Request, res: Response) => {
     try {
-        const commentId = new ObjectId(req.params.id)
-        await commentsRepository.deleteComment(commentId)
+        await commentsRepository.deleteComment(new ObjectId(req.params.id))
         res.status(204).send('Удалено');
     } catch (e) {
         res.status(500).send(e)
